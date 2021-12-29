@@ -1,0 +1,8 @@
+-c prod.txt
+bandit
+black
+mypy
+pycodestyle
+pydocstyle
+pylint
+safety

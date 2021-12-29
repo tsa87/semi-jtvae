@@ -1,0 +1,13 @@
+name: anbnet
+channels:
+  - defaults
+  - pyg
+  - pytorch
+  - conda-forge
+dependencies:
+  - rdkit
+  - python
+  - pip
+  - pyg
+  - pytorch>=1.8
+prefix: /home/tsa87/anaconda3/envs/anbnet
