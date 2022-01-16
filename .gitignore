@@ -2,6 +2,7 @@
 data/downloaded
 data/processed
 data/interim
+examples/data
 
 # Logs
 training/logs

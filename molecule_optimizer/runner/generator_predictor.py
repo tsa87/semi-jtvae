@@ -21,7 +21,7 @@ class GeneratorPredictor:
         )
 
     def run_prop_opt(self, *args, **kwargs):
-        r"""
+        """
         Running graph generation for property optimization task.
         """
 

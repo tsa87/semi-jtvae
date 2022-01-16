@@ -4,7 +4,8 @@
         "prop_list": "[]",
         "url": "https://raw.githubusercontent.com/divelab/DIG_storage/main/ggraph/zinc250k_property.csv",
         "num_max_node": "38",
-        "atom_list": "[6, 7, 8, 9, 15, 16, 17, 35, 53]"
+        "atom_list": "[6, 7, 8, 9, 15, 16, 17, 35, 53]",
+        "processed_path": "molecule_optimizer/data/zinc/processed/data.pt"
     },
     "model": {
         "max_size": 38,

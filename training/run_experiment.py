@@ -5,7 +5,7 @@ import numpy as np
 import torch
 
 from dig.ggraph.dataset import ZINC250k
-from dig.ggraph.method import GraphDF
+from molecule_optimizer.runner.semi_jtvae import SemiJTVAEGeneratorPredictor
 from torch_geometric.data import DenseDataLoader
 
 np.random.seed(42)
@@ -32,13 +32,20 @@ def main():
     conf = json.load(open(args.config_path))
 
     print("Processing Dataset...")
-    dataset = ZINC250k(one_shot=False, use_aug=False)
+    dataset = ZINC250k(
+        one_shot=False,
+        use_aug=False,
+        processed_filename=conf["data"]["processed_path"],
+    )
+    zinc_250_jt = torch.load(conf["data"]["processed_path"])
+    smiles = zinc_800_jt[-1]
+
     loader = DenseDataLoader(
         dataset, batch_size=conf["batch_size"], shuffle=True
     )
 
     print("Training model...")
-    runner = GraphDF()
+    runner = SemiJTVAEGeneratorPredictor()
     runner.train_rand_gen(
         loader=loader,
         lr=conf["lr"],
