@@ -91,10 +91,8 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             preprocessed (list): A list of preprocessed MolTree objects.
 
         """
-        # TODO In the future, this can be parallelized
-        preprocessed = np.array(
-            list(map(self._tensorize, tqdm(list_smiles, leave=True)))
-        )
+
+        preprocessed = np.array(list(map(self._tensorize, list_smiles)))
         processed_idxs = (preprocessed != None).nonzero()
         processed_smiles = preprocessed[processed_idxs]
         processed_labels = labels[processed_idxs]
@@ -180,51 +178,39 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         for epoch in range(num_epochs):
             for batch in loader:
                 total_step += 1
-                try:
-                    self.vae.zero_grad()
-                    labelled_data = batch["labelled_data"]
-                    unlabelled_data = batch["unlabelled_data"]
-                    labels = batch["labels"]
 
-                    (
-                        labelled_loss,
-                        labelled_kl_div,
-                        labelled_mae,
-                        labelled_wacc,
-                        labelled_tacc,
-                        labelled_sacc,
-                    ) = self.vae(labelled_data, labels, alpha, beta)
-                    (
-                        unlabelled_loss,
-                        unlabelled_kl_div,
-                        unlabelled_mae,
-                        unlabelled_wacc,
-                        unlabelled_tacc,
-                        unlabelled_sacc,
-                    ) = self.vae(unlabelled_data, None, alpha, beta)
+                self.vae.zero_grad()
+                labelled_data = batch["labelled_data"]
+                unlabelled_data = batch["unlabelled_data"]
+                labels = batch["labels"]
 
-                    loss, kl_div, mae, wacc, tacc, sacc = (
-                        labelled_loss,
-                        labelled_kl_div,
-                        labelled_mae,
-                        labelled_wacc / 2,
-                        labelled_tacc / 2,
-                        labelled_sacc / 2,
-                    ) + (
-                        unlabelled_loss,
-                        unlabelled_kl_div,
-                        unlabelled_mae,
-                        unlabelled_wacc / 2,
-                        unlabelled_tacc / 2,
-                        unlabelled_sacc / 2,
-                    )
+                (
+                    labelled_loss,
+                    labelled_kl_div,
+                    labelled_mae,
+                    labelled_wacc,
+                    labelled_tacc,
+                    labelled_sacc,
+                ) = self.vae(labelled_data, labels, alpha, beta)
+                (
+                    unlabelled_loss,
+                    unlabelled_kl_div,
+                    unlabelled_mae,
+                    unlabelled_wacc,
+                    unlabelled_tacc,
+                    unlabelled_sacc,
+                ) = self.vae(unlabelled_data, None, alpha, beta)
 
-                    loss.backward()
-                    nn.utils.clip_grad_norm_(self.vae.parameters(), clip_norm)
-                    optimizer.step()
-                except Exception as e:
-                    print(e)
-                    continue
+                loss = labelled_loss + unlabelled_loss
+                kl_div = labelled_kl_div + unlabelled_kl_div
+                mae = labelled_mae + unlabelled_mae
+                wacc = (labelled_wacc + unlabelled_wacc) / 2
+                tacc = (labelled_tacc + unlabelled_tacc) / 2
+                sacc = (labelled_sacc + unlabelled_sacc) / 2
+
+                loss.backward()
+                nn.utils.clip_grad_norm_(self.vae.parameters(), clip_norm)
+                optimizer.step()
 
                 meters = meters + np.array(
                     [loss, kl_div, mae, wacc * 100, tacc * 100, sacc * 100]

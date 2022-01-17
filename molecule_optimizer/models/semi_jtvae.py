@@ -43,8 +43,8 @@ class SemiJTVAE(JTNNVAE):
 
     def setup_scaler(self, label_mean, label_var):
         scaler = StandardScaler()
-        scaler.mean_ = label_mean
-        scaler.var_ = label_var
+        scaler.mean_ = np.array(label_mean)
+        scaler.var_ = np.array(label_var)
         scaler.scale_ = np.sqrt(scaler.var_)
         return scaler
 
@@ -65,15 +65,22 @@ class SemiJTVAE(JTNNVAE):
         )
 
         if label is None:
-            label = y_vecs
+            normalized_label = y_vecs
             pred_loss, mae = 0, 0
         else:
-            normalized_label = self.scaler.transform(label)
+            normalized_label = torch.from_numpy(
+                self.scaler.transform(label.reshape(-1, 1).numpy())
+            ).cuda(0)
             pred_loss = alpha * torch.mean(
                 self.pred_loss(y_vecs, normalized_label)
             )
             mae = torch.mean(
-                torch.abs(label - self.scaler.inverse_transform(y_vecs))
+                torch.abs(
+                    label
+                    - self.scaler.inverse_transform(
+                        y_vecs.cpu().detach().numpy()
+                    )
+                )
             )
 
         z_tree_vecs, tree_kl = self.rsample(
