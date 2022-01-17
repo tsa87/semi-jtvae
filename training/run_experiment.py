@@ -5,6 +5,7 @@ import numpy as np
 import torch
 
 from dig.ggraph.dataset import ZINC250k
+from molecule_optimizer.externals.fast_jtnn.datautils import SemiMolTreeFolder
 from molecule_optimizer.runner.semi_jtvae import SemiJTVAEGeneratorPredictor
 from torch_geometric.data import DenseDataLoader
 
@@ -32,21 +33,41 @@ def main():
     conf = json.load(open(args.config_path))
 
     print("Processing Dataset...")
-    dataset = ZINC250k(
+    _ = ZINC250k(
         one_shot=False,
         use_aug=False,
         processed_filename=conf["data"]["processed_path"],
     )
     zinc_250_jt = torch.load(conf["data"]["processed_path"])
-    smiles = zinc_800_jt[-1]
+    smiles = zinc_250_jt[-1]
+    labels = zinc_250_jt[0].y
 
-    loader = DenseDataLoader(
-        dataset, batch_size=conf["batch_size"], shuffle=True
+    jtvae = SemiJTVAEGeneratorPredictor(smiles)
+    jtvae.get_model(
+        "rand_gen",
+        config={
+            "hidden_size": conf["hidden_size"],
+            "latent_size": conf["latent_size"],
+            "depthT": conf["depthT"],
+            "depthG": conf["depthG"],
+            "label_size": 1,
+            "label_mean": np.mean(labels),
+            "label_var": np.var(labels),
+        },
+    )
+
+    preprocessed, labels = jtvae.preprocess(smiles, labels)
+
+    loader = SemiMolTreeFolder(
+        preprocessed,
+        labels,
+        jtvae.vocab,
+        conf["batch_size"],
+        num_workers=conf["num_workers"],
     )
 
     print("Training model...")
-    runner = SemiJTVAEGeneratorPredictor()
-    runner.train_rand_gen(
+    jtvae.train_rand_gen(
         loader=loader,
         lr=conf["lr"],
         wd=conf["weight_decay"],

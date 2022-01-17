@@ -1,10 +1,8 @@
 import copy
-import math
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import rdkit
 import rdkit.Chem as Chem
 
 from .mol_tree import MolTree

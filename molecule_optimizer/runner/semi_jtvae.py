@@ -80,7 +80,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             del node.mol
         return mol_tree
 
-    def preprocess(self, list_smiles):
+    def preprocess(self, list_smiles, labels):
         """
         Preprocess the molecules.
 
@@ -95,8 +95,10 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         preprocessed = np.array(
             list(map(self._tensorize, tqdm(list_smiles, leave=True)))
         )
-        processed_idxs = (preprocessed is not None).nonzero()
-        return preprocessed, processed_idxs
+        processed_idxs = (preprocessed != None).nonzero()
+        processed_smiles = preprocessed[processed_idxs]
+        processed_labels = labels[processed_idxs]
+        return processed_smiles, processed_labels
 
     def train_gen_pred(
         self,
@@ -173,7 +175,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             )
 
         total_step = load_epoch
-        meters = np.zeros(4)
+        meters = np.zeros(6)
 
         for epoch in range(num_epochs):
             for batch in loader:
@@ -187,6 +189,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                     (
                         labelled_loss,
                         labelled_kl_div,
+                        labelled_mae,
                         labelled_wacc,
                         labelled_tacc,
                         labelled_sacc,
@@ -194,27 +197,27 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                     (
                         unlabelled_loss,
                         unlabelled_kl_div,
+                        unlabelled_mae,
                         unlabelled_wacc,
                         unlabelled_tacc,
                         unlabelled_sacc,
                     ) = self.vae(unlabelled_data, None, alpha, beta)
 
-                    loss, kl_div, wacc, tacc, sacc = (
-                        (
-                            labelled_loss,
-                            labelled_kl_div,
-                            labelled_wacc,
-                            labelled_tacc,
-                            labelled_sacc,
-                        )
-                        + (
-                            unlabelled_loss,
-                            unlabelled_kl_div,
-                            unlabelled_wacc,
-                            unlabelled_tacc,
-                            unlabelled_sacc,
-                        )
-                    ) / 2
+                    loss, kl_div, mae, wacc, tacc, sacc = (
+                        labelled_loss,
+                        labelled_kl_div,
+                        labelled_mae,
+                        labelled_wacc / 2,
+                        labelled_tacc / 2,
+                        labelled_sacc / 2,
+                    ) + (
+                        unlabelled_loss,
+                        unlabelled_kl_div,
+                        unlabelled_mae,
+                        unlabelled_wacc / 2,
+                        unlabelled_tacc / 2,
+                        unlabelled_sacc / 2,
+                    )
 
                     loss.backward()
                     nn.utils.clip_grad_norm_(self.vae.parameters(), clip_norm)
@@ -224,13 +227,13 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                     continue
 
                 meters = meters + np.array(
-                    [kl_div, wacc * 100, tacc * 100, sacc * 100]
+                    [loss, kl_div, mae, wacc * 100, tacc * 100, sacc * 100]
                 )
 
                 if total_step % print_iter == 0:
                     meters /= 50
                     print(
-                        "[%d] Beta: %.3f, KL: %.2f, Word: %.2f, Topo: %.2f, Assm: %.2f, PNorm: %.2f, GNorm: %.2f"
+                        "[%d] Beta: %.3f, Loss: %.2f, KL: %.2f, MAE: %.2f, Word: %.2f, Topo: %.2f, Assm: %.2f, PNorm: %.2f, GNorm: %.2f"
                         % (
                             total_step,
                             beta,
@@ -238,6 +241,8 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                             meters[1],
                             meters[2],
                             meters[3],
+                            meters[4],
+                            meters[5],
                             param_norm(self.vae),
                             grad_norm(self.vae),
                         )

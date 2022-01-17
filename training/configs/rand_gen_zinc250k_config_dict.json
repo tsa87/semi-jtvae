@@ -24,21 +24,9 @@
     "max_epochs": 10,
     "save_interval": 1,
     "save_dir": "rand_gen_zinc250k",
-    "num_min_node": 7,
-    "num_max_node": 25,
-    "temperature": [
-        0.35,
-        0.2
-    ],
-    "atom_list": [
-        6,
-        7,
-        8,
-        9,
-        15,
-        16,
-        17,
-        35,
-        53
-    ]
+    "hidden_size": 420,
+    "latent_size": 56,
+    "depthT": 20,
+    "depthG": 3,
+    "num_workers": 4
 }

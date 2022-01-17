@@ -29,7 +29,7 @@ class SemiJTVAE(JTNNVAE):
         super().__init__(vocab, hidden_size, latent_size, depthT, depthG)
 
         self.label_size = label_size
-        self.label_scaler = self.setup_scaler(label_mean, label_var)
+        self.scaler = self.setup_scaler(label_mean, label_var)
 
         latent_size = int(latent_size / 2)
         self.T_mean = nn.Linear(hidden_size + label_size, latent_size)
@@ -66,16 +66,25 @@ class SemiJTVAE(JTNNVAE):
 
         if label is None:
             label = y_vecs
-            pred_loss = 0
+            pred_loss, mae = 0, 0
         else:
-            label = self.label_scaler.transform(label)
-            pred_loss = alpha * torch.mean(self.pred_loss(y_vecs, label))
+            normalized_label = self.scaler.transform(label)
+            pred_loss = alpha * torch.mean(
+                self.pred_loss(y_vecs, normalized_label)
+            )
+            mae = torch.mean(
+                torch.abs(label - self.scaler.inverse_transform(y_vecs))
+            )
 
         z_tree_vecs, tree_kl = self.rsample(
-            torch.cat((x_tree_vecs, label), 1), self.T_mean, self.T_var
+            torch.cat((x_tree_vecs, normalized_label), 1),
+            self.T_mean,
+            self.T_var,
         )
         z_mol_vecs, mol_kl = self.rsample(
-            torch.cat((x_mol_vecs, label), 1), self.G_mean, self.G_var
+            torch.cat((x_mol_vecs, normalized_label), 1),
+            self.G_mean,
+            self.G_var,
         )
 
         kl_div = tree_kl + mol_kl + y_kl
@@ -93,6 +102,7 @@ class SemiJTVAE(JTNNVAE):
             + beta * kl_div
             + alpha * pred_loss,
             kl_div.item(),
+            mae,
             word_acc,
             topo_acc,
             assm_acc,
