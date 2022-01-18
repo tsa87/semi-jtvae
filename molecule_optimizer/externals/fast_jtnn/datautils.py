@@ -213,14 +213,6 @@ class SemiMolTreeFolder(MolTreeFolder):
         for b in dataloader:
             yield b
 
-        del (
-            self.preprocessed_data,
-            labelled_batches,
-            unlabelled_batches,
-            dataset,
-            dataloader,
-        )
-
 
 class PairTreeDataset(Dataset):
     def __init__(self, data, vocab, y_assm):
