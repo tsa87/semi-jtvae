@@ -49,10 +49,10 @@ def main():
     runner.get_model(
         "rand_gen",
         {
-            "hidden_size": conf["hidden_size"],
-            "latent_size": conf["latent_size"],
-            "depthT": conf["depthT"],
-            "depthG": conf["depthG"],
+            "hidden_size": conf["model"]["hidden_size"],
+            "latent_size": conf["model"]["latent_size"],
+            "depthT": conf["model"]["depthT"],
+            "depthG": conf["model"]["depthG"],
             "label_size": 1,
             "label_mean": np.mean(labels),
             "label_var": np.var(labels),
@@ -72,10 +72,17 @@ def main():
     print("Training model...")
     runner.train_gen_pred(
         loader=loader,
+        load_epoch=0,
         lr=conf["lr"],
-        wd=conf["weight_decay"],
-        max_epochs=conf["max_epochs"],
-        model_conf_dict=conf["model"],
-        save_interval=conf["save_interval"],
-        save_dir=conf["save_dir"],
+        anneal_rate=conf["anneal_rate"],
+        clip_norm=conf["clip_norm"],
+        num_epochs=conf["num_epochs"],
+        alpha=conf["alpha"],
+        beta=conf["beta"],
+        max_beta=conf["max_beta"],
+        step_beta=conf["step_beta"],
+        anneal_iter=conf["anneal_iter"],
+        kl_anneal_iter=conf["kl_anneal_iter"],
+        print_iter=conf["print_iter"],
+        save_iter=conf["save_iter"],
     )

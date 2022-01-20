@@ -1,11 +1,9 @@
 import numpy as np
-from math import sqrt
 from sklearn.preprocessing import StandardScaler
 
 import torch
 import torch.nn as nn
 
-from molecule_optimizer.utils import create_var
 from molecule_optimizer.externals.fast_jtnn import JTNNVAE
 
 HIDDEN_SIZE = 450
