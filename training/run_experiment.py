@@ -31,6 +31,7 @@ def main():
     """
     parser = _setup_parser()
     args = parser.parse_args()
+    print(args.config_path)
     conf = json.load(open(args.config_path))
 
     print("Processing Dataset...")
@@ -86,3 +87,6 @@ def main():
         print_iter=conf["print_iter"],
         save_iter=conf["save_iter"],
     )
+
+if __name__ == '__main__':
+    main()
