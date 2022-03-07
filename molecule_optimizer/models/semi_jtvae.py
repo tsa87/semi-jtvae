@@ -29,13 +29,20 @@ class SemiJTVAE(JTNNVAE):
         self.label_size = label_size
         self.scaler = self.setup_scaler(label_mean, label_var)
 
-        latent_size = int(latent_size / 2)
-        self.T_mean = nn.Linear(hidden_size + label_size, latent_size)
-        self.T_var = nn.Linear(hidden_size + label_size, latent_size)
-        self.G_mean = nn.Linear(hidden_size + label_size, latent_size)
-        self.G_var = nn.Linear(hidden_size + label_size, latent_size)
-        self.Y_mean = nn.Linear(hidden_size * 2, label_size)
-        self.Y_var = nn.Linear(hidden_size * 2, label_size)
+        self.T_mean = nn.Linear(
+            self.hidden_size + self.label_size, self.latent_size
+        )
+        self.T_var = nn.Linear(
+            self.hidden_size + self.label_size, self.latent_size
+        )
+        self.G_mean = nn.Linear(
+            self.hidden_size + self.label_size, self.latent_size
+        )
+        self.G_var = nn.Linear(
+            self.hidden_size + self.label_size, self.latent_size
+        )
+        self.Y_mean = nn.Linear(self.hidden_size * 2, self.label_size)
+        self.Y_var = nn.Linear(self.hidden_size * 2, self.label_size)
 
         self.pred_loss = nn.MSELoss()
 
@@ -46,11 +53,24 @@ class SemiJTVAE(JTNNVAE):
         scaler.scale_ = np.sqrt(scaler.var_)
         return scaler
 
-    def sample_prior(self, label, prob_decode=False):
-        x_tree_vecs = torch.randn(1, self.latent_size).cuda()
-        x_mol_vecs = torch.randn(1, self.latent_size).cuda()
-        z_tree_vecs = self.rsample(x_tree_vecs, label, self.T_mean, self.T_var)
-        z_mol_vecs = self.rsample(x_mol_vecs, label, self.G_mean, self.G_var)
+    def sample_prior(self, label=None, prob_decode=False):
+        if label is None:
+            x_tree_vecs = torch.randn(
+                1, self.hidden_size + self.label_size
+            ).cuda()
+            x_mol_vecs = torch.randn(
+                1, self.hidden_size + self.label_size
+            ).cuda()
+        else:
+            x_tree_vecs = torch.cat(
+                (torch.randn(1, self.hidden_size), label), 1
+            ).cuda()
+            x_mol_vecs = torch.cat(
+                (torch.randn(1, self.hidden_size), label), 1
+            ).cuda()
+
+        z_tree_vecs = self.rsample(x_tree_vecs, self.T_mean, self.T_var)
+        z_mol_vecs = self.rsample(x_mol_vecs, self.G_mean, self.G_var)
         return self.decode(z_tree_vecs, z_mol_vecs, prob_decode)
 
     def forward(self, x_batch, label, alpha, beta):
