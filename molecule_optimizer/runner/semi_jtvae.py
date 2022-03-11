@@ -67,18 +67,19 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
     def _tensorize(self, smiles, assm=True):
         try:
             mol_tree = fast_jtnn.MolTree(smiles)
+            mol_tree.recover()
+            if assm:
+                mol_tree.assemble()
+                for node in mol_tree.nodes:
+                    if node.label not in node.cands:
+                        node.cands.append(node.label)
+            del mol_tree.mol
+            for node in mol_tree.nodes:
+                del node.mol
+            return mol_tree
         except:
             return None
-        mol_tree.recover()
-        if assm:
-            mol_tree.assemble()
-            for node in mol_tree.nodes:
-                if node.label not in node.cands:
-                    node.cands.append(node.label)
-        del mol_tree.mol
-        for node in mol_tree.nodes:
-            del node.mol
-        return mol_tree
+        
 
     def preprocess(self, list_smiles, labels):
         """
