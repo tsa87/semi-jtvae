@@ -7,7 +7,6 @@
 #SBATCH --output=out.out
 echo “starting the job...”
 export PYTHONPATH=.
-export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 source ~/.bashrc
 module load python/3.8
 source anb_env/bin/activate
