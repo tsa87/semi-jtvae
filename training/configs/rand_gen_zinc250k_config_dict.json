@@ -11,6 +11,7 @@
   },
   "lr": 0.001,
   "anneal_rate": 0.9,
+  "batch_size": 32,
   "clip_norm": 50.0,
   "num_epochs": 5,
   "alpha": 0.1,

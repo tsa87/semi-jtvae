@@ -214,7 +214,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 optimizer.step()
 
                 meters = meters + np.array(
-                    [loss, kl_div, mae, wacc * 100, tacc * 100, sacc * 100]
+                    [loss.detach().cpu(), kl_div, mae, wacc * 100, tacc * 100, sacc * 100]
                 )
 
                 if total_step % print_iter == 0:
