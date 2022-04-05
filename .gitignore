@@ -1,4 +1,7 @@
 .out
+.xml
+
+data/
 
 # Data
 data/downloaded

@@ -9,6 +9,7 @@ from tqdm import tqdm
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from p_tqdm import p_map
 import torch.optim.lr_scheduler as lr_scheduler
 
 import molecule_optimizer.externals.fast_jtnn as fast_jtnn
@@ -43,6 +44,15 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         else:
             raise ValueError("Task {} is not supported in JTVAE!".format(task))
 
+            
+    def _get_vocab(self, smiles):
+        try:
+            mol = fast_jtnn.MolTree(smiles)
+            return [c.smiles for c in mol.nodes]
+        except:
+            return []
+            
+    
     def build_vocabulary(self, list_smiles):
         """
         Building the vocabulary for training.
@@ -54,14 +64,10 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             cset (list): A list of smiles that contains the vocabulary for the training data.
 
         """
-        cset = set()
-        for smiles in list_smiles:
-            try:
-                mol = fast_jtnn.MolTree(smiles)
-                for c in mol.nodes:
-                    cset.add(c.smiles)
-            except:
-                pass
+        vocab_lists = (p_map(self._get_vocab, list_smiles))
+        vocabs = [vocab for vocab_list in vocab_lists for vocab in vocab_list]
+        cset = set(vocabs)
+    
         return list(cset)
 
     def _tensorize(self, smiles, assm=True):
@@ -92,8 +98,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             preprocessed (list): A list of preprocessed MolTree objects.
 
         """
-
-        preprocessed = np.array(list(map(self._tensorize, list_smiles)))
+        preprocessed = np.array(list(p_map(self._tensorize, list_smiles)))
         processed_idxs = (preprocessed != None).nonzero()
         processed_smiles = preprocessed[processed_idxs]
         processed_labels = labels[processed_idxs]
