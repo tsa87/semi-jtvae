@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --time=08:00:00
-#SBATCH --gres=gpu:p100:2
+#SBATCH --time=20:00:00
+#SBATCH --gres=gpu:p100l:4
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=40GB
 #SBATCH --account=rrg-ester
@@ -9,5 +9,5 @@ echo “starting the job...”
 export PYTHONPATH=.
 source ~/.bashrc
 module load python/3.8
-source anb_env/bin/activate
+source env/bin/activate
 python training/run_experiment.py --config_path=training/configs/rand_gen_zinc250k_config_dict.json
