@@ -1,14 +1,20 @@
+%load_ext autoreload
+%autoreload 2
 import os
 import json
-import argparse
-
-import numpy as np
+import rdkit
 import torch
+import pickle 
+import argparse
+import numpy as np
 
 from dig.ggraph.dataset import ZINC250k, ZINC800
 from molecule_optimizer.externals.fast_jtnn.datautils import SemiMolTreeFolder
 from molecule_optimizer.runner.semi_jtvae import SemiJTVAEGeneratorPredictor
 from torch_geometric.data import DenseDataLoader
+
+import warnings
+warnings.filterwarnings("ignore")
 
 np.random.seed(42)
 torch.manual_seed(42)
@@ -32,39 +38,49 @@ def main():
     parser = _setup_parser()
     args = parser.parse_args()
     print(args.config_path)
+    
+    lg = rdkit.RDLogger.logger()
+    lg.setLevel(rdkit.RDLogger.CRITICAL)
+    
     conf = json.load(open(args.config_path))
 
-    print("Processing Dataset...")
-    _ = ZINC250k(
-        root=conf["data"]["root"],
-        one_shot=False,
-        use_aug=False,
-    )
+    if False:
+        print("Processing Dataset...")
+        _ = ZINC250k(
+            root=conf["data"]["root"],
+            one_shot=False,
+            use_aug=False,
+        )
+
     zinc_250_jt = torch.load(
         os.path.join(conf["data"]["root"], conf["data"]["processed_path"])
     )
     smiles = zinc_250_jt[-1]
     labels = zinc_250_jt[0].y
 
-    runner = SemiJTVAEGeneratorPredictor(smiles)
-    runner.get_model(
-        "rand_gen",
-        {
-            "hidden_size": conf["model"]["hidden_size"],
-            "latent_size": conf["model"]["latent_size"],
-            "depthT": conf["model"]["depthT"],
-            "depthG": conf["model"]["depthG"],
-            "label_size": 1,
-            "label_mean": np.mean(labels),
-            "label_var": np.var(labels),
-        },
-    )
+    if False:
+        runner = SemiJTVAEGeneratorPredictor(smiles, labels)
+        runner.get_model(
+            "rand_gen",
+            {
+                "hidden_size": conf["model"]["hidden_size"],
+                "latent_size": conf["model"]["latent_size"],
+                "depthT": conf["model"]["depthT"],
+                "depthG": conf["model"]["depthG"],
+                "label_size": 1,
+                "label_mean": float(torch.mean(labels)),
+                "label_var": float(torch.var(labels)),
+            },
+        )
+        with open('runner.pickle', 'wb') as f: 
+            pickle.dump(runner, f)
 
-    preprocessed, labels = runner.preprocess(smiles, labels)
+    with open('runner.pickle', 'rb') as f: 
+    runner = pickle.load(f)
 
     loader = SemiMolTreeFolder(
-        preprocessed,
-        labels,
+        runner.smiles,
+        runner.labels,
         runner.vocab,
         conf["batch_size"],
         num_workers=conf["num_workers"],
