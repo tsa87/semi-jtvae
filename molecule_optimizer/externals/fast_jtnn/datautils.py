@@ -160,8 +160,8 @@ class SemiMolTreeFolder(MolTreeFolder):
 
         # Repeat the labeled data to match length of unlabeled data
         if len(self.labelled_idxs) > len(self.unlabelled_idxs):
-            self.unlabelled_idxs = self.unlabelled_idxs[
-                : len(self.labelled_idxs)
+            self.labelled_idxs = self.labelled_idxs[
+                : len(self.unlabelled_idxs)
             ]
         else:
             labeled_index = []
@@ -174,19 +174,20 @@ class SemiMolTreeFolder(MolTreeFolder):
             self.labelled_idxs = self.labelled_idxs[
                 : len(self.unlabelled_idxs)
             ]
+        
+        print(len(self.labelled_idxs))
+        print(len(self.unlabelled_idxs))
 
         labelled_batches = [
             self.labelled_idxs[i : i + self.batch_size]
-            for i in range(0, len(self.labelled_idxs), self.batch_size)
+            for i in range(0, len(self.labelled_idxs)-self.batch_size, self.batch_size)
         ]
         unlabelled_batches = [
             self.labelled_idxs[i : i + self.batch_size]
-            for i in range(0, len(self.unlabelled_idxs), self.batch_size)
+            for i in range(0, len(self.unlabelled_idxs)-self.batch_size, self.batch_size)
         ]
 
-        if len(unlabelled_batches[-1]) < self.batch_size:
-            unlabelled_batches.pop()
-            labelled_batches.pop()
+        assert len(labelled_batches) == len(unlabelled_batches)
 
         dataset = SemiMolTreeDataset(
             [
