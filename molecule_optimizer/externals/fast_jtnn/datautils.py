@@ -166,7 +166,7 @@ class SemiMolTreeFolder(MolTreeFolder):
         else:
             labeled_index = []
             for _ in range(
-                len(self.unlabelled_idxs) // len(self.labeled_index) + 1
+                len(self.unlabelled_idxs) // len(self.labelled_idxs) + 1
             ):
                 labeled_index.append(self.labelled_idxs)
                 np.random.shuffle(self.labelled_idxs)
@@ -174,9 +174,6 @@ class SemiMolTreeFolder(MolTreeFolder):
             self.labelled_idxs = self.labelled_idxs[
                 : len(self.unlabelled_idxs)
             ]
-        
-        print(len(self.labelled_idxs))
-        print(len(self.unlabelled_idxs))
 
         labelled_batches = [
             self.labelled_idxs[i : i + self.batch_size]
