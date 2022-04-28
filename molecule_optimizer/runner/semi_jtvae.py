@@ -9,6 +9,7 @@ from tqdm import tqdm
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from tqdm import tqdm
 from p_tqdm import p_map
 import torch.optim.lr_scheduler as lr_scheduler
 
@@ -98,7 +99,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             preprocessed (list): A list of preprocessed MolTree objects.
 
         """
-        preprocessed = np.array(list(p_map(self._tensorize, list_smiles)))
+        preprocessed = np.array(list(map(self._tensorize, tqdm(list_smiles, leave=True))))
         processed_idxs = (preprocessed != None).nonzero()
         processed_smiles = preprocessed[processed_idxs]
         processed_labels = labels[processed_idxs]
@@ -179,7 +180,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             )
 
         total_step = load_epoch
-        meters = np.zeros(6)
+        meters = np.zeros(10)
 
         for epoch in range(num_epochs):
             for batch in loader:
@@ -194,6 +195,10 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                     labelled_loss,
                     labelled_kl_div,
                     labelled_mae,
+                    labelled_word_loss,
+                    labelled_topo_loss,
+                    labelled_assm_loss,
+                    labelled_pred_loss,
                     labelled_wacc,
                     labelled_tacc,
                     labelled_sacc,
@@ -202,6 +207,10 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                     unlabelled_loss,
                     unlabelled_kl_div,
                     unlabelled_mae,
+                    unlabelled_word_loss,
+                    unlabelled_topo_loss,
+                    unlabelled_assm_loss,
+                    unlabelled_pred_loss,
                     unlabelled_wacc,
                     unlabelled_tacc,
                     unlabelled_sacc,
@@ -210,6 +219,10 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 loss = labelled_loss + unlabelled_loss
                 kl_div = labelled_kl_div + unlabelled_kl_div
                 mae = labelled_mae + unlabelled_mae
+                word_loss = labelled_word_loss + unlabelled_word_loss
+                topo_loss = labelled_topo_loss + unlabelled_topo_loss
+                assm_loss = labelled_assm_loss + unlabelled_assm_loss
+                pred_loss = labelled_pred_loss + unlabelled_pred_loss
                 wacc = (labelled_wacc + unlabelled_wacc) / 2
                 tacc = (labelled_tacc + unlabelled_tacc) / 2
                 sacc = (labelled_sacc + unlabelled_sacc) / 2
@@ -219,15 +232,16 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 optimizer.step()
 
                 meters = meters + np.array(
-                    [loss.detach().cpu(), kl_div, mae, wacc * 100, tacc * 100, sacc * 100]
+                    [loss.detach().cpu(), kl_div, mae, word_loss.detach().cpu(), topo_loss.detach().cpu(), assm_loss.detach().cpu(), pred_loss.detach().cpu(), wacc*100/print_iter, tacc*100/print_iter, sacc*100/print_iter]
                 )
 
                 if total_step % print_iter == 0:
                     meters /= 50
                     print(
-                        "[%d] Beta: %.3f, Loss: %.2f, KL: %.2f, MAE: %.2f, Word: %.2f, Topo: %.2f, Assm: %.2f, PNorm: %.2f, GNorm: %.2f"
+                        "[%d] Alpha: %.3f, Beta: %.3f, Loss: %.2f, KL: %.2f, MAE: %.2f, Word Loss: %.2f, Topo Loss: %.2f, Assm Loss: %.2f, Pred Loss: %.2f, Word: %.2f, Topo: %.2f, Assm: %.2f, PNorm: %.2f, GNorm: %.2f"
                         % (
                             total_step,
+                            alpha,
                             beta,
                             meters[0],
                             meters[1],
@@ -235,6 +249,10 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                             meters[3],
                             meters[4],
                             meters[5],
+                            meters[6],
+                            meters[7],
+                            meters[8],
+                            meters[9],
                             param_norm(self.vae),
                             grad_norm(self.vae),
                         )
