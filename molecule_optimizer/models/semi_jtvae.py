@@ -89,7 +89,7 @@ class SemiJTVAE(JTNNVAE):
             normalized_label = torch.from_numpy(
                 self.scaler.transform(label.reshape(-1, 1).numpy())
             ).cuda(0)
-            pred_loss = alpha * torch.mean(
+            pred_loss = torch.mean(
                 self.pred_loss(y_vecs, normalized_label)
             )
             mae = torch.mean(
