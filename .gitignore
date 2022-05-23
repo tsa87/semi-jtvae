@@ -1,6 +1,5 @@
 .out
-.xml
-
+*.xml
 .pickle
 
 data/

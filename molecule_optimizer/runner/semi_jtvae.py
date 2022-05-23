@@ -6,11 +6,13 @@ from rdkit import RDLogger, Chem
 from rdkit.Chem import Descriptors
 from tqdm import tqdm
 
+from toolz import partition_all
+from multiprocessing import Pool
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from tqdm import tqdm
-from p_tqdm import p_map
 import torch.optim.lr_scheduler as lr_scheduler
 
 import molecule_optimizer.externals.fast_jtnn as fast_jtnn
@@ -35,6 +37,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         if build_vocab:
             self.vocab = self.build_vocabulary(list_smiles)
         self.model = None
+        self.processed_smiles, self.processed_idxs = self.preprocess(list_smiles)
 
     def get_model(self, task, config_dict):
         if task == "rand_gen":
@@ -65,7 +68,13 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             cset (list): A list of smiles that contains the vocabulary for the training data.
 
         """
-        vocab_lists = (p_map(self._get_vocab, list_smiles))
+        vocab_lists = []
+        chunks = list(partition_all(5000, list_smiles))
+            
+        with Pool() as P:
+            for chunk in tqdm(chunks):
+                vocab_lists.extend(list(P.map(self._get_vocab, chunk)))
+        
         vocabs = [vocab for vocab_list in vocab_lists for vocab in vocab_list]
         cset = set(vocabs)
     
@@ -88,7 +97,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             return None
         
 
-    def preprocess(self, list_smiles, labels):
+    def preprocess(self, list_smiles):
         """
         Preprocess the molecules.
 
@@ -99,12 +108,21 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             preprocessed (list): A list of preprocessed MolTree objects.
 
         """
-        preprocessed = np.array(list(map(self._tensorize, tqdm(list_smiles, leave=True))))
-        processed_idxs = (preprocessed != None).nonzero()
+        preprocessed = []
+        chunks = list(partition_all(5000, list_smiles))
+        
+        with Pool() as P:
+            for chunk in tqdm(chunks):
+                preprocessed.extend(list(P.map(self._tensorize, chunk)))
+        preprocessed = np.array(preprocessed)
+        
+        processed_idxs = (preprocessed != None).nonzero()[0]
         processed_smiles = preprocessed[processed_idxs]
-        processed_labels = labels[processed_idxs]
-        return processed_smiles, processed_labels
-
+        return processed_smiles, processed_idxs
+    
+    def get_processed_labels(self, labels):
+        return labels[self.processed_idxs]
+        
     def train_gen_pred(
         self,
         loader,
@@ -232,13 +250,13 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 optimizer.step()
 
                 meters = meters + np.array(
-                    [loss.detach().cpu(), kl_div, mae, word_loss.detach().cpu(), topo_loss.detach().cpu(), assm_loss.detach().cpu(), pred_loss.detach().cpu(), wacc*100/print_iter, tacc*100/print_iter, sacc*100/print_iter]
+                    [loss.detach().cpu(), kl_div, mae/print_iter, word_loss.detach().cpu(), topo_loss.detach().cpu(), assm_loss.detach().cpu(), pred_loss.detach().cpu(), wacc*100/print_iter, tacc*100/print_iter, sacc*100/print_iter]
                 )
 
                 if total_step % print_iter == 0:
                     meters /= 50
                     print(
-                        "[%d] Alpha: %.3f, Beta: %.3f, Loss: %.2f, KL: %.2f, MAE: %.2f, Word Loss: %.2f, Topo Loss: %.2f, Assm Loss: %.2f, Pred Loss: %.2f, Word: %.2f, Topo: %.2f, Assm: %.2f, PNorm: %.2f, GNorm: %.2f"
+                        "[%d] Alpha: %.3f, Beta: %.3f, Loss: %.2f, KL: %.2f, MAE: %.5f, Word Loss: %.2f, Topo Loss: %.2f, Assm Loss: %.2f, Pred Loss: %.2f, Word: %.2f, Topo: %.2f, Assm: %.2f, PNorm: %.2f, GNorm: %.2f"
                         % (
                             total_step,
                             alpha,

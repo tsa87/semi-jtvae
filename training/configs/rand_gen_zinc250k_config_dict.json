@@ -14,7 +14,7 @@
   "batch_size": 32,
   "clip_norm": 50.0,
   "num_epochs": 5,
-  "alpha": 0.1,
+  "alpha": 250,
   "beta": 0.0,
   "max_beta": 1.0,
   "step_beta": 0.002,
