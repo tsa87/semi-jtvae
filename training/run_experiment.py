@@ -72,7 +72,7 @@ def main():
                 "label_var": float(torch.var(labels)),
             },
         )
-        with open('runner.pickle', 'wb') as f: 
+        with open('runner.xml', 'wb') as f: 
             pickle.dump(runner, f)
 
     with open('runner.pickle', 'rb') as f: 

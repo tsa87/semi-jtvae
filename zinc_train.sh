@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --time=20:00:00
+#SBATCH --time=2:00:00
 #SBATCH --gres=gpu:p100l:4
 #SBATCH --cpus-per-task=2
-#SBATCH --mem=40GB
-#SBATCH --account=rrg-ester
+#SBATCH --mem=45GB
+#SBATCH --account=def-ester
 #SBATCH --output=out.out
 echo “starting the job...”
 export PYTHONPATH=.
