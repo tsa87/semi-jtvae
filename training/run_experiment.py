@@ -1,5 +1,3 @@
-%load_ext autoreload
-%autoreload 2
 import os
 import json
 import rdkit
@@ -8,7 +6,6 @@ import pickle
 import argparse
 import numpy as np
 
-from dig.ggraph.dataset import ZINC250k, ZINC800
 from molecule_optimizer.externals.fast_jtnn.datautils import SemiMolTreeFolder
 from molecule_optimizer.runner.semi_jtvae import SemiJTVAEGeneratorPredictor
 from torch_geometric.data import DenseDataLoader
@@ -44,47 +41,41 @@ def main():
     
     conf = json.load(open(args.config_path))
 
-    if False:
-        print("Processing Dataset...")
-        _ = ZINC250k(
-            root=conf["data"]["root"],
-            one_shot=False,
-            use_aug=False,
-        )
+    csv = pd.read_csv("~/scratch/ZINC_310k.csv")
 
-    zinc_250_jt = torch.load(
-        os.path.join(conf["data"]["root"], conf["data"]["processed_path"])
-    )
-    smiles = zinc_250_jt[-1]
-    labels = zinc_250_jt[0].y
+    smiles = csv['SMILES']
 
-    if False:
-        runner = SemiJTVAEGeneratorPredictor(smiles, labels)
-        runner.get_model(
-            "rand_gen",
-            {
-                "hidden_size": conf["model"]["hidden_size"],
-                "latent_size": conf["model"]["latent_size"],
-                "depthT": conf["model"]["depthT"],
-                "depthG": conf["model"]["depthG"],
-                "label_size": 1,
-                "label_mean": float(torch.mean(labels)),
-                "label_var": float(torch.var(labels)),
-            },
-        )
-        with open('runner.xml', 'wb') as f: 
+    if 'runner.xml' not in os.listdir("."):
+        runner = SemiJTVAEGeneratorPredictor(smiles)
+        with open('runner.xml', 'wb') as f:
             pickle.dump(runner, f)
 
-    with open('runner.pickle', 'rb') as f: 
-    runner = pickle.load(f)
 
+    with open('runner.xml', 'rb') as f: 
+        runner = pickle.load(f)
+    
+    labels = torch.tensor(csv['LogP']).float()
+
+    runner.get_model( "rand_gen",{
+        "hidden_size": conf["model"]["hidden_size"],
+        "latent_size": conf["model"]["latent_size"],
+        "depthT": conf["model"]["depthT"],
+        "depthG": conf["model"]["depthG"],
+        "label_size": 1,
+        "label_mean": float(torch.mean(labels)),
+        "label_var": float(torch.var(labels)),
+    },)
+
+    labels = runner.get_processed_labels(labels)
+    preprocessed = runner.processed_smiles
+    
     loader = SemiMolTreeFolder(
-        runner.smiles,
-        runner.labels,
-        runner.vocab,
-        conf["batch_size"],
-        num_workers=conf["num_workers"],
-    )
+    preprocessed,
+    labels,
+    runner.vocab,
+    conf["batch_size"],
+    num_workers=conf["num_workers"],)
+
 
     print("Training model...")
     runner.train_gen_pred(

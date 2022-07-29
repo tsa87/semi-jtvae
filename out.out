@@ -1,0 +1,6 @@
+“starting the job...”
+0,1
+Traceback (most recent call last):
+  File "training/run_experiment.py", line 9, in <module>
+    from molecule_optimizer.externals.fast_jtnn.datautils import SemiMolTreeFolder
+ModuleNotFoundError: No module named 'molecule_optimizer'
