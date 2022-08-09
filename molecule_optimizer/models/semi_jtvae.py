@@ -101,12 +101,6 @@ class SemiJTVAE(JTNNVAE):
                 )
             )
             
-#             print(f"label: {label}")
-#             print(f"normalized_label: {normalized_label}")
-#             print(f"y_vecs: {y_vecs}")
-#             print(f"unnormalized_y_vecs: {self.scaler.inverse_transform(y_vecs.cpu().detach().numpy())}")
-            
-
         z_tree_vecs, tree_kl = self.rsample(
             torch.cat((x_tree_vecs, normalized_label), 1),
             self.T_mean,

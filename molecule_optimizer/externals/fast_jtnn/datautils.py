@@ -144,7 +144,7 @@ class SemiMolTreeFolder(MolTreeFolder):
         labelled_idxs = np.flatnonzero(labels != -1)
         curr_label_pct = len(labelled_idxs) / size
 
-        if self.label_pct < curr_label_pct:
+        if self.label_pct <= curr_label_pct:
             conceal_size = int((curr_label_pct - self.label_pct) * size)
 
         idxs_to_conceal = np.random.choice(
@@ -211,6 +211,67 @@ class SemiMolTreeFolder(MolTreeFolder):
         for b in dataloader:
             yield b
 
+            
+class SemiMolTreeFolderTest(MolTreeFolder):
+    def __init__(
+        self,
+        preprocessed_data,
+        labels,
+        vocab,
+        batch_size,
+        num_workers=4,
+        shuffle=True,
+        assm=True,
+    ):
+        super().__init__(
+            preprocessed_data,
+            vocab,
+            batch_size,
+            num_workers,
+            shuffle,
+            assm,
+        )
+        self.labels = labels
+
+
+        size = len(self.labels)
+        labels = self.labels
+
+        self.labelled_idxs = np.flatnonzero(labels != -1)
+        
+    def __iter__(self):
+        if self.shuffle:
+            np.random.shuffle(self.labelled_idxs)
+
+        labelled_batches = [
+            self.labelled_idxs[i : i + self.batch_size]
+            for i in range(0, len(self.labelled_idxs)-self.batch_size, self.batch_size)
+        ]
+
+        dataset = SemiMolTreeDataset(
+            [
+                [self.preprocessed_data[i] for i in batch]
+                for batch in labelled_batches
+            ],
+            [
+                [self.preprocessed_data[i] for i in batch]
+                for batch in labelled_batches
+            ],
+            [[self.labels[i] for i in batch] for batch in labelled_batches],
+            self.vocab,
+            self.assm,
+        )
+
+        dataloader = DataLoader(
+            dataset,
+            batch_size=1,
+            shuffle=False,
+            num_workers=self.num_workers,
+            collate_fn=lambda x: x[0],
+        )
+
+        for b in dataloader:
+            yield b
 
 class PairTreeDataset(Dataset):
     def __init__(self, data, vocab, y_assm):
