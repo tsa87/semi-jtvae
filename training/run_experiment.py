@@ -16,6 +16,9 @@ warnings.filterwarnings("ignore")
 np.random.seed(42)
 torch.manual_seed(42)
 
+N_TEST = 10000
+VAL_FRAC = 0.05
+
 
 def _setup_parser():
     parser = argparse.ArgumentParser(add_help=False)
@@ -69,17 +72,35 @@ def main():
     labels = runner.get_processed_labels(labels)
     preprocessed = runner.processed_smiles
     
-    loader = SemiMolTreeFolder(
-    preprocessed,
-    labels,
+    perm_id=np.random.permutation(len(labels))
+    X_train = preprocessed[perm_id[N_TEST:]]
+    L_train = torch.tensor(labels.numpy()[perm_id[N_TEST:]])
+
+
+    X_test = preprocessed[perm_id[:N_TEST]]
+    L_test = torch.tensor(labels.numpy()[perm_id[:N_TEST]])
+    
+    train_loader = SemiMolTreeFolder(
+    X_train,
+    L_train,
     runner.vocab,
     conf["batch_size"],
-    num_workers=conf["num_workers"],)
-
+    label_pct=0.5,
+    num_workers=conf["num_workers"],
+    )
+    
+    test_loader = SemiMolTreeFolderTest(
+    X_test,
+    L_test,
+    runner.vocab,
+    conf["batch_size"],
+    num_workers=conf["num_workers"],
+    )
 
     print("Training model...")
     runner.train_gen_pred(
-        loader=loader,
+        loader=train_loader,
+        test_loader=test_loader,
         load_epoch=0,
         lr=conf["lr"],
         anneal_rate=conf["anneal_rate"],
@@ -91,7 +112,7 @@ def main():
         step_beta=conf["step_beta"],
         anneal_iter=conf["anneal_iter"],
         kl_anneal_iter=conf["kl_anneal_iter"],
-        print_iter=conf["print_iter"],
+        print_iter=100,
         save_iter=conf["save_iter"],
     )
 
