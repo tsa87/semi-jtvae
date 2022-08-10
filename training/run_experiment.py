@@ -6,7 +6,7 @@ import pickle
 import argparse
 import numpy as np
 
-from molecule_optimizer.externals.fast_jtnn.datautils import SemiMolTreeFolder
+from molecule_optimizer.externals.fast_jtnn.datautils import SemiMolTreeFolder, SemiMolTreeFolderTest
 from molecule_optimizer.runner.semi_jtvae import SemiJTVAEGeneratorPredictor
 from torch_geometric.data import DenseDataLoader
 
