@@ -125,6 +125,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
     
     def test_loop(
         self,
+        val_type,
         loader,
         load_epoch,
         lr,
@@ -141,47 +142,54 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         save_iter,
     ):
         
+        total_step = load_epoch
         meters = np.zeros(10)
         
         self.vae.eval()
         
         with torch.no_grad():
             for batch in loader:
-                    labelled_data = batch["labelled_data"]
-                    unlabelled_data = batch["unlabelled_data"]
-                    labels = batch["labels"]
+                total_step += 1
+                labelled_data = batch["labelled_data"]
+                unlabelled_data = batch["unlabelled_data"]
+                labels = batch["labels"]
 
-                    (
-                        labelled_loss,
-                        labelled_kl_div,
-                        labelled_mae,
-                        labelled_word_loss,
-                        labelled_topo_loss,
-                        labelled_assm_loss,
-                        labelled_pred_loss,
-                        labelled_wacc,
-                        labelled_tacc,
-                        labelled_sacc,
-                    ) = self.vae(labelled_data, labels, alpha, beta)
+                (
+                    labelled_loss,
+                    labelled_kl_div,
+                    labelled_mae,
+                    labelled_word_loss,
+                    labelled_topo_loss,
+                    labelled_assm_loss,
+                    labelled_pred_loss,
+                    labelled_wacc,
+                    labelled_tacc,
+                    labelled_sacc,
+                ) = self.vae(labelled_data, labels, alpha, beta)
 
-                    loss = labelled_loss
-                    kl_div = labelled_kl_div
-                    mae = labelled_mae
-                    word_loss = labelled_word_loss
-                    topo_loss = labelled_topo_loss
-                    assm_loss = labelled_assm_loss
-                    pred_loss = labelled_pred_loss
-                    wacc = labelled_wacc
-                    tacc = labelled_tacc
-                    sacc = labelled_sacc
+                loss = labelled_loss
+                kl_div = labelled_kl_div
+                mae = labelled_mae
+                word_loss = labelled_word_loss
+                topo_loss = labelled_topo_loss
+                assm_loss = labelled_assm_loss
+                pred_loss = labelled_pred_loss
+                wacc = labelled_wacc
+                tacc = labelled_tacc
+                sacc = labelled_sacc
 
-                    meters = meters + np.array(
-                        [loss.detach().cpu(), kl_div, mae/print_iter, word_loss.detach().cpu(), topo_loss.detach().cpu(), assm_loss.detach().cpu(), pred_loss.detach().cpu(), wacc*100/print_iter, tacc*100/print_iter, sacc*100/print_iter]
-                    )
+                meters = meters + np.array(
+                    [loss.detach().cpu(), kl_div, mae/print_iter, word_loss.detach().cpu(), topo_loss.detach().cpu(), assm_loss.detach().cpu(), pred_loss.detach().cpu(), wacc*100/print_iter, tacc*100/print_iter, sacc*100/print_iter]
+                )
+
+                if total_step % print_iter == 0:
+                    meters /= print_iter
 
                     print(
-                        "[Test] Alpha: %.3f, Beta: %.3f, Loss: %.2f, KL: %.2f, MAE: %.5f, Word Loss: %.2f, Topo Loss: %.2f, Assm Loss: %.2f, Pred Loss: %.2f, Word: %.2f, Topo: %.2f, Assm: %.2f"
+                        "[%s][%d] Alpha: %.3f, Beta: %.3f, Loss: %.2f, KL: %.2f, MAE: %.5f, Word Loss: %.2f, Topo Loss: %.2f, Assm Loss: %.2f, Pred Loss: %.2f, Word: %.2f, Topo: %.2f, Assm: %.2f"
                         % (
+                            val_type,
+                            total_step,
                             alpha,
                             beta,
                             meters[0],
@@ -203,6 +211,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
     def train_gen_pred(
         self,
         loader,
+        val_loader,
         test_loader,
         load_epoch,
         lr,
@@ -336,7 +345,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 if total_step % print_iter == 0:
                     meters /= print_iter
                     print(
-                        "[%d] Alpha: %.3f, Beta: %.3f, Loss: %.2f, KL: %.2f, MAE: %.5f, Word Loss: %.2f, Topo Loss: %.2f, Assm Loss: %.2f, Pred Loss: %.2f, Word: %.2f, Topo: %.2f, Assm: %.2f, PNorm: %.2f, GNorm: %.2f"
+                        "[Train][%d] Alpha: %.3f, Beta: %.3f, Loss: %.2f, KL: %.2f, MAE: %.5f, Word Loss: %.2f, Topo Loss: %.2f, Assm Loss: %.2f, Pred Loss: %.2f, Word: %.2f, Topo: %.2f, Assm: %.2f, PNorm: %.2f, GNorm: %.2f"
                         % (
                             total_step,
                             alpha,
@@ -357,23 +366,25 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                     )
                     sys.stdout.flush()
                     meters *= 0
+                    val_type="Validation"
                     
                     self.test_loop(
-                    test_loader,
-                    load_epoch,
-                    lr,
-                    anneal_rate,
-                    clip_norm,
-                    num_epochs,
-                    alpha,
-                    beta,
-                    max_beta,
-                    step_beta,
-                    anneal_iter,
-                    kl_anneal_iter,
-                    print_iter,
-                    save_iter,
-                )
+                        val_type,
+                        val_loader,
+                        load_epoch,
+                        lr,
+                        anneal_rate,
+                        clip_norm,
+                        num_epochs,
+                        alpha,
+                        beta,
+                        max_beta,
+                        step_beta,
+                        anneal_iter,
+                        kl_anneal_iter,
+                        print_iter,
+                        save_iter,
+                    )
                 
 
                 if total_step % save_iter == 0:
@@ -391,24 +402,25 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                     and total_step >= anneal_iter
                 ):
                     beta = min(max_beta, beta + step_beta)
-                    
-            if epoch % 10 == 0:
-                self.test_loop(
-                    test_loader,
-                    load_epoch,
-                    lr,
-                    anneal_rate,
-                    clip_norm,
-                    num_epochs,
-                    alpha,
-                    beta,
-                    max_beta,
-                    step_beta,
-                    anneal_iter,
-                    kl_anneal_iter,
-                    print_iter,
-                    save_iter,
-                )
+            
+            val_type="Test"
+            self.test_loop(
+                val_type,
+                test_loader,
+                load_epoch,
+                lr,
+                anneal_rate,
+                clip_norm,
+                num_epochs,
+                alpha,
+                beta,
+                max_beta,
+                step_beta,
+                anneal_iter,
+                kl_anneal_iter,
+                print_iter,
+                save_iter,
+            )
                 
 
     def run_rand_gen(self, num_samples):
