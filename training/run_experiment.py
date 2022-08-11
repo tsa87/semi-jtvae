@@ -5,6 +5,7 @@ import torch
 import pickle 
 import argparse
 import numpy as np
+import pandas as pd
 
 from molecule_optimizer.externals.fast_jtnn.datautils import SemiMolTreeFolder, SemiMolTreeFolderTest
 from molecule_optimizer.runner.semi_jtvae import SemiJTVAEGeneratorPredictor
