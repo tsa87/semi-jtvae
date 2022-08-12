@@ -142,14 +142,13 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         save_iter,
     ):
         
-        total_step = load_epoch
         meters = np.zeros(10)
+        num_iters = 0
         
         self.vae.eval()
         
         with torch.no_grad():
             for batch in loader:
-                total_step += 1
                 labelled_data = batch["labelled_data"]
                 unlabelled_data = batch["unlabelled_data"]
                 labels = batch["labels"]
@@ -181,31 +180,30 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 meters = meters + np.array(
                     [loss.detach().cpu(), kl_div, mae, word_loss.detach().cpu(), topo_loss.detach().cpu(), assm_loss.detach().cpu(), pred_loss.detach().cpu(), wacc*100, tacc*100, sacc*100]
                 )
+                num_iters += 1
 
-                if total_step % print_iter == 0:
-                    meters /= print_iter
-
-                    print(
-                        "[%s][%d] Alpha: %.3f, Beta: %.3f, Loss: %.2f, KL: %.2f, MAE: %.5f, Word Loss: %.2f, Topo Loss: %.2f, Assm Loss: %.2f, Pred Loss: %.2f, Word: %.2f, Topo: %.2f, Assm: %.2f"
-                        % (
-                            val_type,
-                            total_step,
-                            alpha,
-                            beta,
-                            meters[0],
-                            meters[1],
-                            meters[2],
-                            meters[3],
-                            meters[4],
-                            meters[5],
-                            meters[6],
-                            meters[7],
-                            meters[8],
-                            meters[9],
-                        )
-                    )
-                    sys.stdout.flush()
-                    meters *= 0
+        meters /= num_iters
+        print(
+            "[%s][%d] Alpha: %.3f, Beta: %.3f, Loss: %.2f, KL: %.2f, MAE: %.5f, Word Loss: %.2f, Topo Loss: %.2f, Assm Loss: %.2f, Pred Loss: %.2f, Word: %.2f, Topo: %.2f, Assm: %.2f"
+            % (
+                val_type,
+                total_step,
+                alpha,
+                beta,
+                meters[0],
+                meters[1],
+                meters[2],
+                meters[3],
+                meters[4],
+                meters[5],
+                meters[6],
+                meters[7],
+                meters[8],
+                meters[9],
+            )
+        )
+        sys.stdout.flush()
+        return 
 
         
     def train_gen_pred(
@@ -287,12 +285,12 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         total_step = load_epoch
         meters = np.zeros(10)
         
-        self.vae.train()
-
         for epoch in range(num_epochs):
+            self.vae.train()
+            
             for batch in loader:
                 total_step += 1
-
+                
                 self.vae.zero_grad()
                 labelled_data = batch["labelled_data"]
                 unlabelled_data = batch["unlabelled_data"]
@@ -333,7 +331,8 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 wacc = (labelled_wacc + unlabelled_wacc) / 2
                 tacc = (labelled_tacc + unlabelled_tacc) / 2
                 sacc = (labelled_sacc + unlabelled_sacc) / 2
-
+                
+                optimizer.zero_grad()
                 loss.backward()
                 nn.utils.clip_grad_norm_(self.vae.parameters(), clip_norm)
                 optimizer.step()
@@ -367,26 +366,6 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                     )
                     sys.stdout.flush()
                     meters *= 0
-                    val_type="Validation"
-                    
-                    self.test_loop(
-                        val_type,
-                        val_loader,
-                        load_epoch,
-                        lr,
-                        anneal_rate,
-                        clip_norm,
-                        num_epochs,
-                        alpha,
-                        beta,
-                        max_beta,
-                        step_beta,
-                        anneal_iter,
-                        kl_anneal_iter,
-                        print_iter,
-                        save_iter,
-                    )
-                
 
                 if total_step % save_iter == 0:
                     torch.save(
@@ -404,10 +383,10 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 ):
                     beta = min(max_beta, beta + step_beta)
             
-            val_type="Test"
+            val_type="Validation"
             self.test_loop(
                 val_type,
-                test_loader,
+                val_loader,
                 load_epoch,
                 lr,
                 anneal_rate,
