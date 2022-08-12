@@ -179,7 +179,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 sacc = labelled_sacc
 
                 meters = meters + np.array(
-                    [loss.detach().cpu(), kl_div, mae/print_iter, word_loss.detach().cpu(), topo_loss.detach().cpu(), assm_loss.detach().cpu(), pred_loss.detach().cpu(), wacc*100/print_iter, tacc*100/print_iter, sacc*100/print_iter]
+                    [loss.detach().cpu(), kl_div, mae, word_loss.detach().cpu(), topo_loss.detach().cpu(), assm_loss.detach().cpu(), pred_loss.detach().cpu(), wacc*100, tacc*100, sacc*100]
                 )
 
                 if total_step % print_iter == 0:
@@ -325,11 +325,11 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
 
                 loss = labelled_loss + unlabelled_loss
                 kl_div = labelled_kl_div + unlabelled_kl_div
-                mae = labelled_mae + unlabelled_mae
+                mae = labelled_mae # Only labelled data have MAE
+                pred_loss = labelled_pred_loss # Only labelled data have pred loss
                 word_loss = labelled_word_loss + unlabelled_word_loss
                 topo_loss = labelled_topo_loss + unlabelled_topo_loss
                 assm_loss = labelled_assm_loss + unlabelled_assm_loss
-                pred_loss = labelled_pred_loss + unlabelled_pred_loss
                 wacc = (labelled_wacc + unlabelled_wacc) / 2
                 tacc = (labelled_tacc + unlabelled_tacc) / 2
                 sacc = (labelled_sacc + unlabelled_sacc) / 2
@@ -339,11 +339,12 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 optimizer.step()
 
                 meters = meters + np.array(
-                    [loss.detach().cpu(), kl_div, mae/print_iter, word_loss.detach().cpu(), topo_loss.detach().cpu(), assm_loss.detach().cpu(), pred_loss.detach().cpu(), wacc*100/print_iter, tacc*100/print_iter, sacc*100/print_iter]
+                    [loss.detach().cpu(), kl_div, mae, word_loss.detach().cpu(), topo_loss.detach().cpu(), assm_loss.detach().cpu(), pred_loss.detach().cpu(), wacc*100, tacc*100, sacc*100]
                 )
 
                 if total_step % print_iter == 0:
                     meters /= print_iter
+                    
                     print(
                         "[Train][%d] Alpha: %.3f, Beta: %.3f, Loss: %.2f, KL: %.2f, MAE: %.5f, Word Loss: %.2f, Topo Loss: %.2f, Assm Loss: %.2f, Pred Loss: %.2f, Word: %.2f, Topo: %.2f, Assm: %.2f, PNorm: %.2f, GNorm: %.2f"
                         % (
