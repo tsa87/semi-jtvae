@@ -1,0 +1,28 @@
+“starting the job...”
+0,1,2,3
+training/configs/rand_gen_zinc250k_config_dict.json
+Training model...
+Model #Params: 5207K
+[Train][100] Alpha: 250.000, Beta: 0.000, Loss: 321.51, KL: 72.84, MAE: 0.80347, Word Loss: 97.79, Topo Loss: 26.43, Assm Loss: 8.81, Pred Loss: 0.75, Word: 26.30, Topo: 79.05, Assm: 55.91, PNorm: 104.54, GNorm: 50.00
+[Train][200] Alpha: 250.000, Beta: 0.000, Loss: 154.00, KL: 108.04, MAE: 0.49364, Word Loss: 61.64, Topo Loss: 15.18, Assm Loss: 8.45, Pred Loss: 0.27, Word: 45.29, Topo: 89.60, Assm: 59.19, PNorm: 109.75, GNorm: 50.00
+[Train][300] Alpha: 250.000, Beta: 0.000, Loss: 149.86, KL: 117.38, MAE: 0.51650, Word Loss: 53.51, Topo Loss: 12.87, Assm Loss: 8.21, Pred Loss: 0.30, Word: 52.80, Topo: 90.71, Assm: 60.02, PNorm: 112.72, GNorm: 50.00
+[Train][400] Alpha: 250.000, Beta: 0.000, Loss: 128.26, KL: 149.58, MAE: 0.42686, Word Loss: 51.46, Topo Loss: 14.15, Assm Loss: 8.50, Pred Loss: 0.22, Word: 54.79, Topo: 90.15, Assm: 58.31, PNorm: 116.63, GNorm: 50.00
+[Train][500] Alpha: 250.000, Beta: 0.000, Loss: 102.23, KL: 183.40, MAE: 0.35051, Word Loss: 47.62, Topo Loss: 10.45, Assm Loss: 7.84, Pred Loss: 0.15, Word: 57.41, Topo: 92.51, Assm: 60.08, PNorm: 120.04, GNorm: 50.00
+[Train][600] Alpha: 250.000, Beta: 0.000, Loss: 100.85, KL: 206.19, MAE: 0.34385, Word Loss: 46.52, Topo Loss: 12.06, Assm Loss: 7.98, Pred Loss: 0.14, Word: 58.55, Topo: 91.44, Assm: 60.27, PNorm: 123.65, GNorm: 50.00
+[Train][700] Alpha: 250.000, Beta: 0.000, Loss: 91.62, KL: 226.99, MAE: 0.30969, Word Loss: 45.34, Topo Loss: 10.71, Assm Loss: 7.84, Pred Loss: 0.11, Word: 60.62, Topo: 92.35, Assm: 61.95, PNorm: 126.79, GNorm: 50.00
+[Train][800] Alpha: 250.000, Beta: 0.000, Loss: 94.71, KL: 248.90, MAE: 0.33437, Word Loss: 44.07, Topo Loss: 9.55, Assm Loss: 7.75, Pred Loss: 0.13, Word: 61.31, Topo: 93.16, Assm: 62.19, PNorm: 129.82, GNorm: 50.00
+[Train][900] Alpha: 250.000, Beta: 0.000, Loss: 80.99, KL: 262.95, MAE: 0.26811, Word Loss: 43.13, Topo Loss: 9.12, Assm Loss: 7.68, Pred Loss: 0.08, Word: 61.62, Topo: 93.40, Assm: 61.32, PNorm: 132.97, GNorm: 50.00
+[Train][1000] Alpha: 250.000, Beta: 0.000, Loss: 89.17, KL: 268.65, MAE: 0.33135, Word Loss: 41.01, Topo Loss: 9.62, Assm Loss: 7.45, Pred Loss: 0.12, Word: 63.88, Topo: 93.10, Assm: 61.98, PNorm: 135.03, GNorm: 50.00
+[Train][1100] Alpha: 250.000, Beta: 0.000, Loss: 80.48, KL: 270.83, MAE: 0.28209, Word Loss: 40.59, Topo Loss: 8.40, Assm Loss: 7.53, Pred Loss: 0.10, Word: 63.86, Topo: 94.04, Assm: 64.39, PNorm: 137.48, GNorm: 50.00
+[Train][1200] Alpha: 250.000, Beta: 0.000, Loss: 77.98, KL: 289.48, MAE: 0.27355, Word Loss: 39.75, Topo Loss: 8.86, Assm Loss: 7.20, Pred Loss: 0.09, Word: 64.90, Topo: 93.86, Assm: 63.66, PNorm: 140.02, GNorm: 50.00
+[Train][1300] Alpha: 250.000, Beta: 0.000, Loss: 74.29, KL: 302.71, MAE: 0.25438, Word Loss: 39.52, Topo Loss: 8.11, Assm Loss: 7.42, Pred Loss: 0.08, Word: 64.37, Topo: 94.07, Assm: 63.71, PNorm: 142.43, GNorm: 50.00
+[Train][1400] Alpha: 250.000, Beta: 0.000, Loss: 71.75, KL: 335.25, MAE: 0.23763, Word Loss: 38.86, Topo Loss: 8.26, Assm Loss: 7.40, Pred Loss: 0.07, Word: 65.77, Topo: 94.12, Assm: 64.41, PNorm: 144.78, GNorm: 50.00
+[Train][1500] Alpha: 250.000, Beta: 0.000, Loss: 72.54, KL: 330.11, MAE: 0.25637, Word Loss: 37.97, Topo Loss: 8.29, Assm Loss: 7.10, Pred Loss: 0.08, Word: 66.04, Topo: 94.05, Assm: 64.63, PNorm: 146.77, GNorm: 50.00
+[Train][1600] Alpha: 250.000, Beta: 0.000, Loss: 68.91, KL: 344.76, MAE: 0.23388, Word Loss: 37.98, Topo Loss: 7.70, Assm Loss: 7.26, Pred Loss: 0.06, Word: 66.04, Topo: 94.51, Assm: 64.75, PNorm: 149.83, GNorm: 50.00
+[Train][1700] Alpha: 250.000, Beta: 0.000, Loss: 71.35, KL: 364.08, MAE: 0.24750, Word Loss: 37.64, Topo Loss: 7.55, Assm Loss: 7.25, Pred Loss: 0.08, Word: 66.79, Topo: 94.65, Assm: 64.30, PNorm: 152.30, GNorm: 50.00
+[Train][1800] Alpha: 250.000, Beta: 0.000, Loss: 63.62, KL: 378.53, MAE: 0.21590, Word Loss: 35.74, Topo Loss: 7.37, Assm Loss: 6.81, Pred Loss: 0.05, Word: 67.95, Topo: 94.75, Assm: 67.01, PNorm: 154.34, GNorm: 50.00
+[Train][1900] Alpha: 250.000, Beta: 0.000, Loss: 64.99, KL: 385.92, MAE: 0.22440, Word Loss: 35.59, Topo Loss: 7.58, Assm Loss: 7.08, Pred Loss: 0.06, Word: 68.12, Topo: 94.62, Assm: 64.63, PNorm: 156.60, GNorm: 50.00
+[Train][2000] Alpha: 250.000, Beta: 0.000, Loss: 63.55, KL: 389.12, MAE: 0.20944, Word Loss: 34.83, Topo Loss: 7.26, Assm Loss: 6.91, Pred Loss: 0.06, Word: 68.96, Topo: 94.75, Assm: 66.00, PNorm: 159.09, GNorm: 50.00
+[Train][2100] Alpha: 250.000, Beta: 0.000, Loss: 62.61, KL: 416.41, MAE: 0.21128, Word Loss: 34.69, Topo Loss: 7.27, Assm Loss: 7.03, Pred Loss: 0.05, Word: 68.81, Topo: 94.90, Assm: 65.83, PNorm: 161.23, GNorm: 50.00
+[Train][2200] Alpha: 250.000, Beta: 0.000, Loss: 61.95, KL: 412.14, MAE: 0.22067, Word Loss: 33.76, Topo Loss: 7.00, Assm Loss: 6.70, Pred Loss: 0.06, Word: 70.00, Topo: 95.03, Assm: 65.66, PNorm: 163.26, GNorm: 50.00
+[Train][2300] Alpha: 250.000, Beta: 0.000, Loss: 58.62, KL: 412.92, MAE: 0.20133, Word Loss: 32.72, Topo Loss: 6.78, Assm Loss: 6.76, Pred Loss: 0.05, Word: 70.70, Topo: 95.21, Assm: 67.51, PNorm: 165.53, GNorm: 50.00

@@ -6,6 +6,7 @@ import pickle
 import argparse
 import numpy as np
 import pandas as pd
+import math 
 
 from molecule_optimizer.externals.fast_jtnn.datautils import SemiMolTreeFolder, SemiMolTreeFolderTest
 from molecule_optimizer.runner.semi_jtvae import SemiJTVAEGeneratorPredictor
@@ -80,6 +81,14 @@ def main():
 
     X_test = preprocessed[perm_id[:N_TEST]]
     L_test = torch.tensor(labels.numpy()[perm_id[:N_TEST]])
+   
+    val_cut = math.floor(len(X_train) * VAL_FRAC)
+    
+    X_Val = X_train[:val_cut]
+    L_Val = L_train[:val_cut]
+
+    X_train = X_train[val_cut :]
+    L_train = L_train[val_cut :]
     
     train_loader = SemiMolTreeFolder(
     X_train,
@@ -98,23 +107,34 @@ def main():
     num_workers=conf["num_workers"],
     )
 
+    val_loader = SemiMolTreeFolderTest(
+    X_Val,
+    L_Val,
+    runner.vocab,
+    conf["batch_size"],
+    num_workers=conf["num_workers"],
+    )
+
+
+
     print("Training model...")
     runner.train_gen_pred(
-        loader=train_loader,
-        test_loader=test_loader,
-        load_epoch=0,
-        lr=conf["lr"],
-        anneal_rate=conf["anneal_rate"],
-        clip_norm=conf["clip_norm"],
-        num_epochs=conf["num_epochs"],
-        alpha=conf["alpha"],
-        beta=conf["beta"],
-        max_beta=conf["max_beta"],
-        step_beta=conf["step_beta"],
-        anneal_iter=conf["anneal_iter"],
-        kl_anneal_iter=conf["kl_anneal_iter"],
-        print_iter=100,
-        save_iter=conf["save_iter"],
+    loader=train_loader,
+    val_loader=val_loader,
+    test_loader=test_loader,
+    load_epoch=0,
+    lr=conf["lr"],
+    anneal_rate=conf["anneal_rate"],
+    clip_norm=conf["clip_norm"],
+    num_epochs=conf["num_epochs"],
+    alpha=conf["alpha"],
+    beta=conf["beta"],
+    max_beta=conf["max_beta"],
+    step_beta=conf["step_beta"],
+    anneal_iter=conf["anneal_iter"],
+    kl_anneal_iter=conf["kl_anneal_iter"],
+    print_iter=100,
+    save_iter=conf["save_iter"],
     )
 
 if __name__ == '__main__':
