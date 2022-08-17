@@ -62,7 +62,7 @@ def main():
     #     runner = pickle.load(f)
     
     with open('runner_20.xml', 'rb') as f:
-    runner = pickle.load(f)
+        runner = pickle.load(f)
     
     labels = torch.tensor(csv['QED'][:60000]).float()
 
