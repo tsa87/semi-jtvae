@@ -203,7 +203,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             )
         )
         sys.stdout.flush()
-        return 
+        return meters[3]
 
         
     def train_gen_pred(
@@ -401,6 +401,26 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 print_iter,
                 save_iter,
             )
+            
+            val_type="Test"
+            self.test_loop(
+                val_type,
+                test_loader,
+                load_epoch,
+                lr,
+                anneal_rate,
+                clip_norm,
+                num_epochs,
+                alpha,
+                beta,
+                max_beta,
+                step_beta,
+                anneal_iter,
+                kl_anneal_iter,
+                print_iter,
+                save_iter,
+            )
+            
                 
     
     def train_gen_pred_supervised(
@@ -481,7 +501,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
 
         total_step = load_epoch
         meters = np.zeros(10)
-        
+             
         for epoch in range(num_epochs):
             self.vae.train()
             
@@ -554,7 +574,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 if total_step % save_iter == 0:
                     torch.save(
                         self.vae.state_dict(),
-                        "saved" + "/model.iter-" + str(total_step),
+                        "saved" + "/model0.iter-" + str(total_step),
                     )
 
                 if total_step % anneal_iter == 0:
@@ -568,7 +588,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                     beta = min(max_beta, beta + step_beta)
             
             val_type="Validation"
-            self.test_loop(
+            mae = self.test_loop(
                 val_type,
                 val_loader,
                 load_epoch,
@@ -585,6 +605,44 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 print_iter,
                 save_iter,
             )
+            
+            val_type="Test"
+            self.test_loop(
+                val_type,
+                test_loader,
+                load_epoch,
+                lr,
+                anneal_rate,
+                clip_norm,
+                num_epochs,
+                alpha,
+                beta,
+                max_beta,
+                step_beta,
+                anneal_iter,
+                kl_anneal_iter,
+                print_iter,
+                save_iter,
+            )
+                
+        val_type="Test"
+        self.test_loop(
+                val_type,
+                test_loader,
+                load_epoch,
+                lr,
+                anneal_rate,
+                clip_norm,
+                num_epochs,
+                alpha,
+                beta,
+                max_beta,
+                step_beta,
+                anneal_iter,
+                kl_anneal_iter,
+                print_iter,
+                save_iter,
+        )
     def run_rand_gen(self, num_samples):
         """
         Sample new molecules from the trained model.
