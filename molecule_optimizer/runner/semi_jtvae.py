@@ -245,7 +245,8 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
 
         """
         vocab = fast_jtnn.Vocab(self.vocab)
-
+        next_alpha = alpha
+        
         for param in self.vae.parameters():
             if param.dim() == 1:
                 nn.init.constant_(param, 0)
@@ -291,6 +292,8 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             for batch in loader:
                 total_step += 1
                 
+                alpha = next_alpha
+                
                 self.vae.zero_grad()
                 labelled_data = batch["labelled_data"]
                 unlabelled_data = batch["unlabelled_data"]
@@ -331,6 +334,8 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 wacc = (labelled_wacc + unlabelled_wacc) / 2
                 tacc = (labelled_tacc + unlabelled_tacc) / 2
                 sacc = (labelled_sacc + unlabelled_sacc) / 2
+                
+                next_alpha = (loss.detach().cpu() // 2) // pred_loss.detach().cpu()
                 
                 optimizer.zero_grad()
                 loss.backward()
@@ -382,7 +387,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                     and total_step >= anneal_iter
                 ):
                     beta = min(max_beta, beta + step_beta)
-            
+                
             val_type="Validation"
             self.test_loop(
                 val_type,
@@ -462,7 +467,8 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
 
         """
         vocab = fast_jtnn.Vocab(self.vocab)
-
+        next_alpha = alpha
+        
         for param in self.vae.parameters():
             if param.dim() == 1:
                 nn.init.constant_(param, 0)
@@ -508,6 +514,8 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             for batch in loader:
                 total_step += 1
                 
+                alpha = next_alpha
+                
                 self.vae.zero_grad()
                 labelled_data = batch["labelled_data"]
                 labels = batch["labels"]
@@ -535,6 +543,8 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 wacc = labelled_wacc
                 tacc = labelled_tacc
                 sacc = labelled_sacc
+                
+                next_alpha = (loss.detach().cpu() // 2) // pred_loss.detach().cpu()
                 
                 optimizer.zero_grad()
                 loss.backward()
