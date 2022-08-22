@@ -370,7 +370,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 if total_step % save_iter == 0:
                     torch.save(
                         self.vae.state_dict(),
-                        "saved" + "/model.iter-" + str(total_step),
+                        "saved" + "/model0.iter-" + str(total_step),
                     )
 
                 if total_step % anneal_iter == 0:
