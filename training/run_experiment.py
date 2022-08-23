@@ -15,8 +15,8 @@ from torch_geometric.data import DenseDataLoader
 import warnings
 warnings.filterwarnings("ignore")
 
-np.random.seed(42)
-torch.manual_seed(42)
+np.random.seed(1)
+torch.manual_seed(1)
 
 # N_TEST = 10000
 N_TEST = 200
@@ -64,7 +64,7 @@ def main():
     with open('runner_20.xml', 'rb') as f:
         runner = pickle.load(f)
     
-    labels = torch.tensor(csv['QED'][:60000]).float()
+    labels = torch.tensor(csv['LogP'][:60000]).float()
 
     runner.get_model( "rand_gen",{
         "hidden_size": conf["model"]["hidden_size"],
@@ -112,15 +112,15 @@ def main():
     num_workers=conf["num_workers"],
     )
 
+    batch_size_val = math.floor(len(X_Val) / 10)
+
     val_loader = SemiMolTreeFolderTest(
-    X_Val,
-    L_Val,
-    runner.vocab,
-    conf["batch_size"],
-    num_workers=conf["num_workers"],
+        X_Val,
+        L_Val,
+        runner.vocab,
+        batch_size_val,
+        num_workers=conf["num_workers"],
     )
-
-
 
     print("Training model...")
     runner.train_gen_pred(
