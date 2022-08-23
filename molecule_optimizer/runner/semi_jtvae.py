@@ -335,7 +335,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 tacc = (labelled_tacc + unlabelled_tacc) / 2
                 sacc = (labelled_sacc + unlabelled_sacc) / 2
                 
-                next_alpha = (loss.detach().cpu() // 2) // pred_loss.detach().cpu()
+                next_alpha = (loss.detach().cpu() / 4) / pred_loss.detach().cpu()
                 
                 optimizer.zero_grad()
                 loss.backward()
@@ -544,7 +544,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 tacc = labelled_tacc
                 sacc = labelled_sacc
                 
-                next_alpha = (loss.detach().cpu() // 2) // pred_loss.detach().cpu()
+                next_alpha = (loss.detach().cpu() / 4) / pred_loss.detach().cpu()
                 
                 optimizer.zero_grad()
                 loss.backward()
