@@ -154,34 +154,21 @@ class SemiMolTreeFolder(MolTreeFolder):
         return np.flatnonzero(labels != -1), np.flatnonzero(labels == -1)
 
     def __iter__(self):
+        
         if self.shuffle:
             np.random.shuffle(self.labelled_idxs)
             np.random.shuffle(self.unlabelled_idxs)
 
-        # Repeat the labeled data to match length of unlabeled data
-        if len(self.labelled_idxs) > len(self.unlabelled_idxs):
-            self.labelled_idxs = self.labelled_idxs[
-                : len(self.unlabelled_idxs)
-            ]
-        else:
-            labeled_index = []
-            for _ in range(
-                len(self.unlabelled_idxs) // len(self.labelled_idxs) + 1
-            ):
-                labeled_index.append(self.labelled_idxs)
-                np.random.shuffle(self.labelled_idxs)
-            self.labelled_idxs = np.concatenate(labeled_index)
-            self.labelled_idxs = self.labelled_idxs[
-                : len(self.unlabelled_idxs)
-            ]
+        unlabelled_batches = [
+            self.unlabelled_idxs[i : i + self.batch_size]
+            for i in range(0, len(self.unlabelled_idxs)-self.batch_size, self.batch_size)
+        ]
+
+        labelled_batch_size = len(labelled_idxs) / len(unlabelled_batches)
 
         labelled_batches = [
-            self.labelled_idxs[i : i + self.batch_size]
-            for i in range(0, len(self.labelled_idxs)-self.batch_size, self.batch_size)
-        ]
-        unlabelled_batches = [
-            self.labelled_idxs[i : i + self.batch_size]
-            for i in range(0, len(self.unlabelled_idxs)-self.batch_size, self.batch_size)
+            self.labelled_idxs[i : i +  labelled_batch_size]
+            for i in range(0, len(self.labelled_idxs) - labelled_batch_size , labelled_batch_size )
         ]
 
         assert len(labelled_batches) == len(unlabelled_batches)
