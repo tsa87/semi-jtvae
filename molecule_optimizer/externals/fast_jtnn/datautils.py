@@ -180,7 +180,7 @@ class SemiMolTreeFolder(MolTreeFolder):
             for i in range(0, len(self.labelled_idxs)-self.batch_size, self.batch_size)
         ]
         unlabelled_batches = [
-            self.labelled_idxs[i : i + self.batch_size]
+            self.unlabelled_idxs[i : i + self.batch_size]
             for i in range(0, len(self.unlabelled_idxs)-self.batch_size, self.batch_size)
         ]
 
