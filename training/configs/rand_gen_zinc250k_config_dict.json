@@ -23,7 +23,6 @@
   "anneal_iter": 400,
   "alpha_anneal_iter": 600,
   "kl_anneal_iter": 20,
-  "alpha_iter": 20,
   "print_iter": 100,
   "save_iter": 5000,
   "num_workers": 4
