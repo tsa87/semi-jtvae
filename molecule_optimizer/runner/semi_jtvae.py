@@ -278,6 +278,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         meters = np.zeros(10)
         
         for epoch in range(num_epochs):
+            
             self.vae.train()
             
             for batch in loader:
