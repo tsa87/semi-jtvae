@@ -298,7 +298,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         meters = np.zeros(10)
         
         
-        labelled_idxs, unlabelled_idxs = self.compute_labelled_and_unlabelled_idxs(self, labels, label_pct)
+        labelled_idxs, unlabelled_idxs = self.compute_labelled_and_unlabelled_idxs(L_train, label_pct)
         
         for epoch in range(num_epochs):
             
