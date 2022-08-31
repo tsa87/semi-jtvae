@@ -131,7 +131,6 @@ class SemiMolTreeFolder(MolTreeFolder):
             assm,
         )
         self.labels = labels
-        self.label_pct = label_pct
 
         self.labelled_idxs = labelled_idxs
         self.unlabelled_idxs =  unlabelled_idxs
