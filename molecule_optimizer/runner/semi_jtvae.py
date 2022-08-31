@@ -127,23 +127,14 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         self,
         val_type,
         loader,
-        load_epoch,
-        lr,
-        anneal_rate,
-        clip_norm,
-        num_epochs,
-        alpha,
-        beta,
-        max_beta,
-        step_beta,
-        anneal_iter,
-        kl_anneal_iter,
-        print_iter,
-        save_iter,
+        alpha, 
+        beta
     ):
         
         meters = np.zeros(10)
         num_iters = 0
+        
+        self.vae.eval()
         
         with torch.no_grad():
             for batch in loader:
@@ -201,7 +192,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             )
         )
         sys.stdout.flush()
-        return meters[3]
+        return meters[2]
 
         
     def train_gen_pred(
@@ -215,10 +206,13 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         clip_norm,
         num_epochs,
         alpha,
+        max_alpha,
+        step_alpha,
         beta,
         max_beta,
         step_beta,
         anneal_iter,
+        alpha_anneal_iter,
         kl_anneal_iter,
         print_iter,
         save_iter,
@@ -284,11 +278,13 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         meters = np.zeros(10)
         
         for epoch in range(num_epochs):
+            self.vae.train()
             
             for batch in loader:
                 total_step += 1
                 
-                self.vae.zero_grad()
+                optimizer.zero_grad()
+                
                 labelled_data = batch["labelled_data"]
                 unlabelled_data = batch["unlabelled_data"]
                 labels = batch["labels"]
@@ -329,7 +325,6 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 tacc = (labelled_tacc + unlabelled_tacc) / 2
                 sacc = (labelled_sacc + unlabelled_sacc) / 2
                 
-                optimizer.zero_grad()
                 loss.backward()
                 nn.utils.clip_grad_norm_(self.vae.parameters(), clip_norm)
                 optimizer.step()
@@ -379,44 +374,28 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                     and total_step >= anneal_iter
                 ):
                     beta = min(max_beta, beta + step_beta)
+                    
+                if (
+                    total_step % kl_anneal_iter == 0
+                    and total_step >= alpha_anneal_iter
+                ):
+                    alpha = min(max_alpha, alpha + step_alpha)
                 
-            val_type="Validation"
-            self.test_loop(
-                val_type,
-                val_loader,
-                load_epoch,
-                lr,
-                anneal_rate,
-                clip_norm,
-                num_epochs,
-                alpha,
-                beta,
-                max_beta,
-                step_beta,
-                anneal_iter,
-                kl_anneal_iter,
-                print_iter,
-                save_iter,
-            )
+#             val_type="Validation"
+#             self.test_loop(
+#                 val_type,
+#                 val_loader, 
+#                 alpha,
+#                 beta
+#             )
             
-            val_type="Test"
-            self.test_loop(
-                val_type,
-                test_loader,
-                load_epoch,
-                lr,
-                anneal_rate,
-                clip_norm,
-                num_epochs,
-                alpha,
-                beta,
-                max_beta,
-                step_beta,
-                anneal_iter,
-                kl_anneal_iter,
-                print_iter,
-                save_iter,
-            )
+#         val_type="Test"
+#         self.test_loop(
+#             val_type,
+#             test_loader,
+#             alpha,
+#             beta
+#         )
             
                 
     
@@ -431,10 +410,13 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         clip_norm,
         num_epochs,
         alpha,
+        max_alpha,
+        step_alpha,
         beta,
         max_beta,
         step_beta,
         anneal_iter,
+        alpha_anneal_iter,
         kl_anneal_iter,
         print_iter,
         save_iter,
@@ -589,30 +571,17 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                     and total_step >= anneal_iter
                 ):
                     beta = min(max_beta, beta + step_beta)
+                    
+                if (
+                    total_step % kl_anneal_iter == 0
+                    and total_step >= alpha_anneal_iter
+                ):
+                    alpha = min(max_alpha, alpha + step_alpha)
             
             val_type="Validation"
             mae = self.test_loop(
                 val_type,
                 val_loader,
-                load_epoch,
-                lr,
-                anneal_rate,
-                clip_norm,
-                num_epochs,
-                alpha,
-                beta,
-                max_beta,
-                step_beta,
-                anneal_iter,
-                kl_anneal_iter,
-                print_iter,
-                save_iter,
-            )
-            
-            val_type="Test"
-            self.test_loop(
-                val_type,
-                test_loader,
                 load_epoch,
                 lr,
                 anneal_rate,
