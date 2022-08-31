@@ -413,20 +413,20 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 ):
                     alpha = min(max_alpha, alpha + step_alpha)
                     
-        val_type="Validation"
-        val_loader = SemiMolTreeFolderTest(
-            X_Val,
-            L_Val,
-            self.vocab,
-            batch_size,
-            num_workers
-        )
-        self.test_loop(
-            val_type,
-            val_loader,
-            alpha,
-            beta
-        )        
+            val_type="Validation"
+            val_loader = SemiMolTreeFolderTest(
+                X_Val,
+                L_Val,
+                self.vocab,
+                batch_size,
+                num_workers
+            )
+            self.test_loop(
+                val_type,
+                val_loader,
+                alpha,
+                beta
+            )        
     
     def train_gen_pred_supervised(
         self,
