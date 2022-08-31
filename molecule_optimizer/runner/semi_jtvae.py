@@ -18,6 +18,7 @@ import torch.optim.lr_scheduler as lr_scheduler
 import molecule_optimizer.externals.fast_jtnn as fast_jtnn
 from molecule_optimizer.models.semi_jtvae import SemiJTVAE
 from molecule_optimizer.runner.generator_predictor import GeneratorPredictor
+from molecule_optimizer.externals.fast_jtnn.datautils import SemiMolTreeFolder, SemiMolTreeFolderTest
 
 
 class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
@@ -194,12 +195,28 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         sys.stdout.flush()
         return meters[2]
 
+    def compute_labelled_and_unlabelled_idxs(self, labels, label_pct):
+        size = len(labels)
+
+        labelled_idxs = np.flatnonzero(labels != -1)
+        curr_label_pct = len(labelled_idxs) / size
+
+        if label_pct <= curr_label_pct:
+            conceal_size = int((curr_label_pct - label_pct) * size)
+
+        idxs_to_conceal = np.random.choice(
+            labelled_idxs, conceal_size, replace=False
+        )
+        labels[idxs_to_conceal] = -1
+        return np.flatnonzero(labels != -1), np.flatnonzero(labels == -1)
+    
         
     def train_gen_pred(
         self,
-        loader,
-        val_loader,
-        test_loader,
+        X_train,
+        L_train,
+        X_Val,
+        L_Val,
         load_epoch,
         lr,
         anneal_rate,
@@ -216,6 +233,9 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         kl_anneal_iter,
         print_iter,
         save_iter,
+        batch_size,
+        num_workers,
+        label_pct
     ):
         """
         Train the Junction Tree Variational Autoencoder for the random generation task.
@@ -277,9 +297,20 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         total_step = load_epoch
         meters = np.zeros(10)
         
+        
+        labelled_idxs, unlabelled_idxs = self.compute_labelled_and_unlabelled_idxs(self, labels, label_pct)
+        
         for epoch in range(num_epochs):
             
             self.vae.train()
+            
+            loader = SemiMolTreeFolder(
+                X_train, L_train,
+                labelled_idxs, unlabelled_idxs,
+                self.vocab,
+                batch_size,
+                num_workers,
+            )
             
             for batch in loader:
                 total_step += 1
@@ -381,24 +412,21 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                     and total_step >= alpha_anneal_iter
                 ):
                     alpha = min(max_alpha, alpha + step_alpha)
-                
-#             val_type="Validation"
-#             self.test_loop(
-#                 val_type,
-#                 val_loader, 
-#                 alpha,
-#                 beta
-#             )
-            
-#         val_type="Test"
-#         self.test_loop(
-#             val_type,
-#             test_loader,
-#             alpha,
-#             beta
-#         )
-            
-                
+                    
+        val_type="Validation"
+        val_loader = SemiMolTreeFolderTest(
+            X_Val,
+            L_Val,
+            self.vocab,
+            batch_size,
+            num_workers
+        )
+        self.test_loop(
+            val_type,
+            val_loader,
+            alpha,
+            beta
+        )        
     
     def train_gen_pred_supervised(
         self,

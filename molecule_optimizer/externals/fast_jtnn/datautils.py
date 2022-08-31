@@ -114,9 +114,10 @@ class SemiMolTreeFolder(MolTreeFolder):
         self,
         preprocessed_data,
         labels,
+        labelled_idxs, 
+        unlabelled_idxs,
         vocab,
         batch_size,
-        label_pct=0.5,
         num_workers=4,
         shuffle=True,
         assm=True,
@@ -132,26 +133,8 @@ class SemiMolTreeFolder(MolTreeFolder):
         self.labels = labels
         self.label_pct = label_pct
 
-        (
-            self.labelled_idxs,
-            self.unlabelled_idxs,
-        ) = self.compute_labelled_and_unlabelled_idxs()
-
-    def compute_labelled_and_unlabelled_idxs(self):
-        size = len(self.labels)
-        labels = self.labels
-
-        labelled_idxs = np.flatnonzero(labels != -1)
-        curr_label_pct = len(labelled_idxs) / size
-
-        if self.label_pct <= curr_label_pct:
-            conceal_size = int((curr_label_pct - self.label_pct) * size)
-
-        idxs_to_conceal = np.random.choice(
-            labelled_idxs, conceal_size, replace=False
-        )
-        labels[idxs_to_conceal] = -1
-        return np.flatnonzero(labels != -1), np.flatnonzero(labels == -1)
+        self.labelled_idxs = labelled_idxs
+        self.unlabelled_idxs =  unlabelled_idxs
 
     def __iter__(self):
         if self.shuffle:
