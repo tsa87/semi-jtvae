@@ -94,52 +94,32 @@ def main():
 
     X_train = X_train[val_cut :]
     L_train = L_train[val_cut :]
-    
-    train_loader = SemiMolTreeFolder(
-    X_train,
-    L_train,
-    runner.vocab,
-    conf["batch_size"],
-    label_pct=0.5,
-    num_workers=conf["num_workers"],
-    )
-    
-    test_loader = SemiMolTreeFolderTest(
-    X_test,
-    L_test,
-    runner.vocab,
-    conf["batch_size"],
-    num_workers=conf["num_workers"],
-    )
-
-    batch_size_val = math.floor(len(X_Val) / 10)
-
-    val_loader = SemiMolTreeFolderTest(
-        X_Val,
-        L_Val,
-        runner.vocab,
-        batch_size_val,
-        num_workers=conf["num_workers"],
-    )
 
     print("Training model...")
     runner.train_gen_pred(
-    loader=train_loader,
-    val_loader=val_loader,
-    test_loader=test_loader,
+    X_train,
+    L_train,
+    X_Val,
+    L_Val,
     load_epoch=0,
     lr=conf["lr"],
     anneal_rate=conf["anneal_rate"],
     clip_norm=conf["clip_norm"],
     num_epochs=conf["num_epochs"],
     alpha=conf["alpha"],
+    max_alpha=conf["max_alpha"],
+    step_alpha=conf["step_alpha"],
     beta=conf["beta"],
     max_beta=conf["max_beta"],
     step_beta=conf["step_beta"],
     anneal_iter=conf["anneal_iter"],
+    alpha_anneal_iter=conf["alpha_anneal_iter"],
     kl_anneal_iter=conf["kl_anneal_iter"],
     print_iter=100,
     save_iter=conf["save_iter"],
+    batch_size=conf["batch_size"],
+    num_workers=conf["num_workers"],
+    label_pct=0.05
     )
 
 if __name__ == '__main__':
