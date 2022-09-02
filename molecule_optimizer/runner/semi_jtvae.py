@@ -215,6 +215,8 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         self,
         X_train,
         L_train,
+        X_test,
+        L_test,
         X_Val,
         L_Val,
         load_epoch,
@@ -426,8 +428,23 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 val_loader,
                 alpha,
                 beta
-            )        
-    
+            )  
+            
+        val_type="Test"
+        test_loader = SemiMolTreeFolderTest(
+            X_test,
+            L_test,
+            self.vocab,
+            batch_size,
+            num_workers
+        )
+        self.test_loop(
+            val_type,
+            test_loader,
+            alpha,
+            beta
+        ) 
+
     def train_gen_pred_supervised(
         self,
         loader,
