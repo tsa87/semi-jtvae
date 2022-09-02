@@ -18,8 +18,8 @@ warnings.filterwarnings("ignore")
 np.random.seed(1)
 torch.manual_seed(1)
 
-# N_TEST = 10000
-N_TEST = 200
+N_TEST = 10000
+#N_TEST = 200
 VAL_FRAC = 0.05
 
 
@@ -50,7 +50,7 @@ def main():
     csv = pd.read_csv("~/scratch/ZINC_310k.csv")
 
     smiles = csv['SMILES']
-    smiles = smiles[:60000]
+    #smiles = smiles[:60000]
 
     # if 'runner.xml' not in os.listdir("."):
     #     runner = SemiJTVAEGeneratorPredictor(smiles)
@@ -58,13 +58,15 @@ def main():
     #         pickle.dump(runner, f)
 
 
-    # with open('runner.xml', 'rb') as f: 
-    #     runner = pickle.load(f)
-    
-    with open('runner_20.xml', 'rb') as f:
+    with open('runner.xml', 'rb') as f: 
         runner = pickle.load(f)
     
-    labels = torch.tensor(csv['LogP'][:60000]).float()
+    # with open('runner_20.xml', 'rb') as f:
+    #     runner = pickle.load(f)
+    
+    # labels = torch.tensor(csv['LogP'][:60000]).float()
+    
+    labels = torch.tensor(csv['LogP']).float()
 
     runner.get_model( "rand_gen",{
         "hidden_size": conf["model"]["hidden_size"],

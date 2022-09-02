@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --time=5:00:00
+#SBATCH --time=24:00:00
 #SBATCH --gres=gpu:v100l:4
-#SBATCH --cpus-per-task=3
-#SBATCH --mem=15GB
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=60GB
 #SBATCH --account=def-ester
 #SBATCH --output=cedar0.out
 echo “starting the job...”
