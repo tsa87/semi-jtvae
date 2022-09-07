@@ -66,7 +66,7 @@ def main():
     
     # labels = torch.tensor(csv['LogP'][:60000]).float()
     
-    labels = torch.tensor(csv['LogP']).float()
+    labels = torch.tensor(csv['MolWt']).float()
 
     runner.get_model( "rand_gen",{
         "hidden_size": conf["model"]["hidden_size"],
@@ -101,6 +101,8 @@ def main():
     runner.train_gen_pred(
     X_train,
     L_train,
+    X_test,
+    L_test,
     X_Val,
     L_Val,
     load_epoch=0,
@@ -121,7 +123,7 @@ def main():
     save_iter=conf["save_iter"],
     batch_size=conf["batch_size"],
     num_workers=conf["num_workers"],
-    label_pct=0.05
+    label_pct=0.5
     )
 
 if __name__ == '__main__':
