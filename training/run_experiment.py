@@ -66,11 +66,7 @@ def main():
     
     # labels = torch.tensor(csv['LogP'][:60000]).float()
     
-<<<<<<< HEAD
     labels = torch.tensor(csv['QED']).float()
-=======
-    labels = torch.tensor(csv['MolWt']).float()
->>>>>>> 877f1e00b0f44ee345998582739536b0029e45a2
 
     runner.get_model( "rand_gen",{
         "hidden_size": conf["model"]["hidden_size"],

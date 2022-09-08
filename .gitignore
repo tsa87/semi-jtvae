@@ -1,6 +1,6 @@
 saved/
 
-.out
+*.out
 *.xml
 .pickle
 

@@ -396,13 +396,8 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 if total_step % save_iter == 0:
                     torch.save(
                         self.vae.state_dict(),
-<<<<<<< HEAD
                         "saved" + "/model.narval_qed_50_1_iter_" + str(total_step),
-=======
-                        "saved" + "/model.cedar_molwt_50_1_iter_" + str(total_step),
->>>>>>> 877f1e00b0f44ee345998582739536b0029e45a2
-                    )
-
+                
                 if total_step % anneal_iter == 0:
                     scheduler.step()
                     print("learning rate: %.6f" % scheduler.get_lr()[0])
@@ -603,12 +598,8 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 if total_step % save_iter == 0:
                     torch.save(
                         self.vae.state_dict(),
-<<<<<<< HEAD
+
                         "saved" + "/model.narval_qed_50_1_iter_" + str(total_step),
-=======
-                        "saved" + "/model.cedar_molwt_50_1_iter_" + str(total_step),
->>>>>>> 877f1e00b0f44ee345998582739536b0029e45a2
-                    )
 
                 if total_step % anneal_iter == 0:
                     scheduler.step()
