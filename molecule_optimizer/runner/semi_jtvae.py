@@ -268,7 +268,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
 
         if 0 > 0:
             self.vae.load_state_dict(
-                torch.load("checkpoints" + "/model.iter-0-" + str(load_epoch))
+                torch.load("checkpoints" + "/model.iter" + str(load_epoch))
             )
 
         print(
@@ -396,7 +396,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 if total_step % save_iter == 0:
                     torch.save(
                         self.vae.state_dict(),
-                        "saved" + "/model.iter-0-" + str(total_step),
+                        "saved" + "/model.narval_qed_50_1_iter_" + str(total_step),
                     )
 
                 if total_step % anneal_iter == 0:
@@ -599,7 +599,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 if total_step % save_iter == 0:
                     torch.save(
                         self.vae.state_dict(),
-                        "saved" + "/model.iter-0-" + str(total_step),
+                        "saved" + "/model.narval_qed_50_1_iter_" + str(total_step),
                     )
 
                 if total_step % anneal_iter == 0:

@@ -1,10 +1,10 @@
 #!/bin/bash
-#SBATCH --time=24:00:00
+#SBATCH --time=35:00:00
 #SBATCH --gres=gpu:a100:4
-#SBATCH --cpus-per-task=4
-#SBATCH --mem=60GB
+#SBATCH --cpus-per-task=3
+#SBATCH --mem=55GB
 #SBATCH --account=def-ester
-#SBATCH --output=narval0.out
+#SBATCH --output=narval_qed_50_1.out
 echo “starting the job...”
 echo $CUDA_VISIBLE_DEVICES
 export PYTHONPATH=.
