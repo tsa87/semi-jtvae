@@ -1,10 +1,10 @@
 #!/bin/bash
-#SBATCH --time=24:00:00
+#SBATCH --time=2:00:00
 #SBATCH --gres=gpu:v100l:4
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=60GB
+#SBATCH --mem=55GB
 #SBATCH --account=def-ester
-#SBATCH --output=cedar0.out
+#SBATCH --output=cedar_molwt_50_1.out
 echo “starting the job...”
 echo $CUDA_VISIBLE_DEVICES
 export PYTHONPATH=.

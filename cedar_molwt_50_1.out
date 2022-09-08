@@ -1,0 +1,13 @@
+“starting the job...”
+0,1,2,3
+training/configs/rand_gen_zinc250k_config_dict.json
+Training model...
+Model #Params: 5207K
+[Train][100] Alpha: 0.000, Beta: 0.000, Loss: 117.38, KL: 431.18, MAE: 348.42169, Word Loss: 88.70, Topo Loss: 20.07, Assm Loss: 8.60, Pred Loss: 32.48, Word: 28.66, Topo: 84.42, Assm: 56.03, PNorm: 103.53, GNorm: 40.88
+[Train][200] Alpha: 0.000, Beta: 0.000, Loss: 76.42, KL: 343.70, MAE: 93.59297, Word Loss: 55.48, Topo Loss: 12.64, Assm Loss: 8.30, Pred Loss: 2.93, Word: 51.35, Topo: 91.12, Assm: 59.80, PNorm: 107.99, GNorm: 50.00
+[Train][300] Alpha: 0.000, Beta: 0.000, Loss: 65.57, KL: 372.01, MAE: 79.40254, Word Loss: 47.14, Topo Loss: 10.61, Assm Loss: 7.82, Pred Loss: 2.17, Word: 59.82, Topo: 92.64, Assm: 61.72, PNorm: 111.87, GNorm: 50.00
+[Train][400] Alpha: 0.000, Beta: 0.000, Loss: 60.46, KL: 413.96, MAE: 70.77096, Word Loss: 42.70, Topo Loss: 9.94, Assm Loss: 7.83, Pred Loss: 1.71, Word: 63.69, Topo: 92.88, Assm: 62.45, PNorm: 114.87, GNorm: 37.90
+[Train][500] Alpha: 0.000, Beta: 0.000, Loss: 55.89, KL: 442.41, MAE: 62.72065, Word Loss: 39.19, Topo Loss: 9.05, Assm Loss: 7.65, Pred Loss: 1.34, Word: 66.11, Topo: 93.57, Assm: 62.10, PNorm: 117.79, GNorm: 44.64
+[Train][600] Alpha: 0.000, Beta: 0.000, Loss: 53.12, KL: 499.96, MAE: 61.72256, Word Loss: 37.36, Topo Loss: 8.40, Assm Loss: 7.37, Pred Loss: 1.30, Word: 68.06, Topo: 94.14, Assm: 63.49, PNorm: 120.63, GNorm: 45.81
+[Train][700] Alpha: 0.000, Beta: 0.000, Loss: 50.49, KL: 536.01, MAE: 55.41966, Word Loss: 35.03, Topo Loss: 8.38, Assm Loss: 7.08, Pred Loss: 1.06, Word: 69.26, Topo: 94.14, Assm: 64.57, PNorm: 123.21, GNorm: 41.37
+[Train][800] Alpha: 0.000, Beta: 0.000, Loss: 49.02, KL: 552.90, MAE: 52.47148, Word Loss: 33.86, Topo Loss: 8.11, Assm Loss: 7.05, Pred Loss: 0.94, Word: 70.23, Topo: 94.24, Assm: 65.87, PNorm: 125.71, GNorm: 43.26

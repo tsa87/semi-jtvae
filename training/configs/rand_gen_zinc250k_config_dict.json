@@ -13,7 +13,11 @@
   "anneal_rate": 0.9,
   "batch_size": 16,
   "clip_norm": 50.0,
+<<<<<<< HEAD
   "num_epochs": 30,
+=======
+  "num_epochs": 20,
+>>>>>>> 877f1e00b0f44ee345998582739536b0029e45a2
   "alpha": 0.0,
   "max_alpha": 500,
   "step_alpha": 2.0,
