@@ -174,7 +174,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
 
         meters /= num_iters
         print(
-            "[%s][%d] Alpha: %.3f, Beta: %.3f, Loss: %.2f, KL: %.2f, MAE: %.5f, Word Loss: %.2f, Topo Loss: %.2f, Assm Loss: %.2f, Pred Loss: %.2f, Word: %.2f, Topo: %.2f, Assm: %.2f"
+            "[%s][%d] Alpha: %.3f, Beta: %.3f, Loss: %.2f, KL: %.2f, MAE: %.5f, Word Loss: %.2f, Topo Loss: %.2f, Assm Loss: %.2f, Pred Loss: %.6f, Word: %.2f, Topo: %.2f, Assm: %.2f"
             % (
                 val_type,
                 num_iters,
