@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --time=2:00:00
+#SBATCH --time=45:00:00
 #SBATCH --gres=gpu:v100l:4
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=3
 #SBATCH --mem=55GB
 #SBATCH --account=def-ester
 #SBATCH --output=cedar_molwt_50_1.out
