@@ -266,9 +266,9 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             else:
                 nn.init.xavier_normal_(param)
 
-        if 0 > 0:
+        if load_epoch > 0:
             self.vae.load_state_dict(
-                torch.load("checkpoints" + "/model.iter" + str(load_epoch))
+                torch.load("saved" + "/model.narval_logp_50_1_iter_" + str(load_epoch))
             )
 
         print(
@@ -397,6 +397,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                     torch.save(
                         self.vae.state_dict(),
                         "saved" + "/model.narval_qed_50_1_iter_" + str(total_step),
+                    )
                 
                 if total_step % anneal_iter == 0:
                     scheduler.step()
@@ -600,6 +601,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                         self.vae.state_dict(),
 
                         "saved" + "/model.narval_qed_50_1_iter_" + str(total_step),
+                    )
 
                 if total_step % anneal_iter == 0:
                     scheduler.step()
