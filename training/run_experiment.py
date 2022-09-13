@@ -66,7 +66,7 @@ def main():
     
     # labels = torch.tensor(csv['LogP'][:60000]).float()
     
-    labels = torch.tensor(csv['QED']).float()
+    labels = torch.tensor(csv['LogP']).float()
 
     runner.get_model( "rand_gen",{
         "hidden_size": conf["model"]["hidden_size"],
@@ -105,7 +105,7 @@ def main():
     L_test,
     X_Val,
     L_Val,
-    load_epoch=0,
+    load_epoch=165000,
     lr=conf["lr"],
     anneal_rate=conf["anneal_rate"],
     clip_norm=conf["clip_norm"],
