@@ -219,9 +219,9 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 nn.init.constant_(param, 0)
             else:
                 nn.init.xavier_normal_(param)
-
-        self.scheduler = lr_scheduler.ExponentialLR(optimizer, anneal_rate)
+        
         self.optimizer = optim.Adam(self.vae.parameters(), lr=lr)
+        self.scheduler = lr_scheduler.ExponentialLR(self.optimizer, anneal_rate)
         self.scheduler.step()
         
         self.labelled_idxs, self.unlabelled_idxs = self.compute_labelled_and_unlabelled_idxs(L_train, label_pct)
