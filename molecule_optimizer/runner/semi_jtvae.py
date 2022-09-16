@@ -213,7 +213,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
     
     
     
-    def initalize_training(self):        
+    def initalize_training(self, lr, anneal_rate, L_train, label_pct):        
         for param in self.vae.parameters():
             if param.dim() == 1:
                 nn.init.constant_(param, 0)
@@ -275,7 +275,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
 
         """
         if self.labelled_idxs is None:
-            self.initalize_training()
+            self.initalize_training(lr, anneal_rate, L_train, label_pct)
         
         total_step = load_epoch
         meters = np.zeros(10)
