@@ -214,6 +214,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
     
     
     def initalize_training(self, lr, anneal_rate, L_train, label_pct):        
+        print("Initializing...")
         for param in self.vae.parameters():
             if param.dim() == 1:
                 nn.init.constant_(param, 0)

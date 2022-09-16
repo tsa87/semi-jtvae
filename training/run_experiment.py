@@ -117,7 +117,7 @@ def main():
     L_test,
     X_Val,
     L_Val,
-    load_epoch=165000,
+    load_epoch = 0,
     lr=conf["lr"],
     anneal_rate=conf["anneal_rate"],
     clip_norm=conf["clip_norm"],
