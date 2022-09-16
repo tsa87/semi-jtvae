@@ -39,7 +39,8 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             self.vocab = self.build_vocabulary(list_smiles)
         self.model = None
         self.processed_smiles, self.processed_idxs = self.preprocess(list_smiles)
-
+        self.labelled_idxs = None
+        
     def get_model(self, task, config_dict):
         if task == "rand_gen":
             # hidden_size, latent_size, depthT, depthG
@@ -210,6 +211,21 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         labels[idxs_to_conceal] = -1
         return np.flatnonzero(labels != -1), np.flatnonzero(labels == -1)
     
+    
+    
+    def initalize_training(self, lr, anneal_rate, L_train, label_pct):        
+        for param in self.vae.parameters():
+            if param.dim() == 1:
+                nn.init.constant_(param, 0)
+            else:
+                nn.init.xavier_normal_(param)
+        
+        self.optimizer = optim.Adam(self.vae.parameters(), lr=lr)
+        self.scheduler = lr_scheduler.ExponentialLR(self.optimizer, anneal_rate)
+        self.scheduler.step()
+        
+        self.labelled_idxs, self.unlabelled_idxs = self.compute_labelled_and_unlabelled_idxs(L_train, label_pct)
+    
         
     def train_gen_pred(
         self,
@@ -258,28 +274,24 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             save_iter (int): How often to save the iteration statistics.
 
         """
-        vocab = fast_jtnn.Vocab(self.vocab)
+        if self.labelled_idxs is None:
+            self.initalize_training(lr, anneal_rate, L_train, label_pct)
         
-        for param in self.vae.parameters():
-            if param.dim() == 1:
-                nn.init.constant_(param, 0)
-            else:
-                nn.init.xavier_normal_(param)
-
+        total_step = load_epoch
+        meters = np.zeros(10)
+        
         if load_epoch > 0:
             self.vae.load_state_dict(
                 torch.load("saved" + "/model.narval_logp_50_1_iter_" + str(load_epoch))
             )
-
+        
+        
+        
         print(
             "Model #Params: %dK"
             % (sum([x.nelement() for x in self.vae.parameters()]) / 1000,)
         )
-
-        optimizer = optim.Adam(self.vae.parameters(), lr=lr)
-        scheduler = lr_scheduler.ExponentialLR(optimizer, anneal_rate)
-        scheduler.step()
-
+        
         def param_norm(m):
             return math.sqrt(
                 sum([p.norm().item() ** 2 for p in m.parameters()])
@@ -295,20 +307,14 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                     ]
                 )
             )
-
-        total_step = load_epoch
-        meters = np.zeros(10)
-        
-        
-        labelled_idxs, unlabelled_idxs = self.compute_labelled_and_unlabelled_idxs(L_train, label_pct)
-        
+   
         for epoch in range(num_epochs):
             
             self.vae.train()
             
             loader = SemiMolTreeFolder(
                 X_train, L_train,
-                labelled_idxs, unlabelled_idxs,
+                self.labelled_idxs, self.unlabelled_idxs,
                 self.vocab,
                 batch_size,
                 num_workers,
@@ -317,7 +323,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             for batch in loader:
                 total_step += 1
                 
-                optimizer.zero_grad()
+                self.optimizer.zero_grad()
                 
                 labelled_data = batch["labelled_data"]
                 unlabelled_data = batch["unlabelled_data"]
@@ -361,7 +367,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 
                 loss.backward()
                 nn.utils.clip_grad_norm_(self.vae.parameters(), clip_norm)
-                optimizer.step()
+                self.optimizer.step()
 
                 meters = meters + np.array(
                     [loss.detach().cpu(), kl_div, mae, word_loss.detach().cpu(), topo_loss.detach().cpu(), assm_loss.detach().cpu(), pred_loss.detach().cpu(), wacc*100, tacc*100, sacc*100]
@@ -400,8 +406,8 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                     )
                 
                 if total_step % anneal_iter == 0:
-                    scheduler.step()
-                    print("learning rate: %.6f" % scheduler.get_lr()[0])
+                    self.scheduler.step()
+                    print("learning rate: %.6f" % self.scheduler.get_lr()[0])
 
                 if (
                     total_step % kl_anneal_iter == 0
