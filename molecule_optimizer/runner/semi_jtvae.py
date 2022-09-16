@@ -450,6 +450,9 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             alpha,
             beta
         ) 
+        
+        with open('runner_20_trained.xml', 'wb') as f:
+        pickle.dump(self, f)
 
     def train_gen_pred_supervised(
         self,
