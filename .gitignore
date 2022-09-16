@@ -3,6 +3,7 @@ saved/
 *.out
 *.csv
 *.xml
+*.npy
 .pickle
 
 data/
