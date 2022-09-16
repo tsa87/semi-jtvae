@@ -18,8 +18,8 @@ warnings.filterwarnings("ignore")
 np.random.seed(1)
 torch.manual_seed(1)
 
-N_TEST = 10000
-#N_TEST = 200
+#N_TEST = 10000
+N_TEST = 200
 VAL_FRAC = 0.05
 
 
@@ -58,15 +58,18 @@ def main():
     #         pickle.dump(runner, f)
 
 
-    with open('runner.xml', 'rb') as f: 
-        runner = pickle.load(f)
+    #with open('runner.xml', 'rb') as f: 
+    #    runner = pickle.load(f)
     
-    # with open('runner_20.xml', 'rb') as f:
-    #     runner = pickle.load(f)
+    if 'runner_20.xml' not in os.listdir("."):
+    runner = SemiJTVAEGeneratorPredictor(smiles)
+    with open('runner_20.xml', 'wb') as f:
+        pickle.dump(runner, f)
     
-    # labels = torch.tensor(csv['LogP'][:60000]).float()
+    labels = torch.tensor(csv['LogP'][:60000]).float()
     
-    labels = torch.tensor(csv['LogP']).float()
+    
+    #labels = torch.tensor(csv['LogP']).float()
 
     runner.get_model( "rand_gen",{
         "hidden_size": conf["model"]["hidden_size"],
@@ -96,6 +99,15 @@ def main():
 
     X_train = X_train[val_cut :]
     L_train = L_train[val_cut :]
+
+    with open('train.npy', 'wb') as f:
+        np.save(f, X_train)
+
+    with open('test.npy', 'wb') as f:
+        np.save(f, X_test)
+
+    with open('validation.npy', 'wb') as f:
+        np.save(f, X_Val)
 
     print("Training model...")
     runner.train_gen_pred(
