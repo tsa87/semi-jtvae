@@ -214,6 +214,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
     
     
     def initalize_training(self, lr, anneal_rate, L_train, label_pct):        
+        print("Initializing...")
         for param in self.vae.parameters():
             if param.dim() == 1:
                 nn.init.constant_(param, 0)
@@ -282,7 +283,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         
         if load_epoch > 0:
             self.vae.load_state_dict(
-                torch.load("saved" + "/model.narval_logp_50_1_iter_" + str(load_epoch))
+                torch.load("saved" + "/model.cedar_logp_50_1_iter_" + str(load_epoch))
             )
         
         
@@ -402,7 +403,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 if total_step % save_iter == 0:
                     torch.save(
                         self.vae.state_dict(),
-                        "saved" + "/model.narval_logp_50_1_iter_" + str(total_step),
+                        "saved" + "/model.cedar_logp_50_1_iter_" + str(total_step),
                     )
                 
                 if total_step % anneal_iter == 0:
@@ -451,7 +452,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             beta
         ) 
         
-        with open('runner_20_trained.xml', 'wb') as f:
+        with open('runner_20_logp_50_1_trained.xml', 'wb') as f:
         pickle.dump(self, f)
 
     def train_gen_pred_supervised(
@@ -609,7 +610,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                     torch.save(
                         self.vae.state_dict(),
 
-                        "saved" + "/model.narval_logp_50_1_iter_" + str(total_step),
+                        "saved" + "/model.cedar_logp_50_1_iter_" + str(total_step),
                     )
 
                 if total_step % anneal_iter == 0:
