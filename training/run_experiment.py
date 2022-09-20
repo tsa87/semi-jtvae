@@ -62,11 +62,11 @@ def main():
     #    runner = pickle.load(f)
     
     if 'runner_20.xml' not in os.listdir("."):
-    runner = SemiJTVAEGeneratorPredictor(smiles)
-    with open('runner_20.xml', 'wb') as f:
-        pickle.dump(runner, f)
+        runner = SemiJTVAEGeneratorPredictor(smiles)
+        with open('runner_20.xml', 'wb') as f:
+            pickle.dump(runner, f)
     
-    labels = torch.tensor(csv['LogP'][:60000]).float()
+    labels = torch.tensor(csv['MolWt'][:60000]).float()
     
     
     #labels = torch.tensor(csv['LogP']).float()
