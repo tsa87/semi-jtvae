@@ -50,7 +50,7 @@ def main():
     csv = pd.read_csv("~/scratch/ZINC_310k.csv")
 
     smiles = csv['SMILES']
-    #smiles = smiles[:60000]
+    smiles = smiles[:60000]
 
     # if 'runner.xml' not in os.listdir("."):
     #     runner = SemiJTVAEGeneratorPredictor(smiles)
@@ -61,13 +61,12 @@ def main():
     #with open('runner.xml', 'rb') as f: 
     #    runner = pickle.load(f)
     
-    if 'runner_20.xml' not in os.listdir("."):
-    runner = SemiJTVAEGeneratorPredictor(smiles)
-    with open('runner_20.xml', 'wb') as f:
-        pickle.dump(runner, f)
+    if 'runner_20_logp_50_1.xml' not in os.listdir("."):
+        runner = SemiJTVAEGeneratorPredictor(smiles)
+        with open('runner_20_logp_50_1.xml', 'wb') as f:
+            pickle.dump(runner, f)
     
     labels = torch.tensor(csv['LogP'][:60000]).float()
-    
     
     #labels = torch.tensor(csv['LogP']).float()
 
@@ -100,13 +99,13 @@ def main():
     X_train = X_train[val_cut :]
     L_train = L_train[val_cut :]
 
-    with open('train.npy', 'wb') as f:
+    with open('train_logp_50_1.npy', 'wb') as f:
         np.save(f, X_train)
 
-    with open('test.npy', 'wb') as f:
+    with open('test_logp_50_1.npy', 'wb') as f:
         np.save(f, X_test)
 
-    with open('validation.npy', 'wb') as f:
+    with open('validation_logp_50_1.npy', 'wb') as f:
         np.save(f, X_Val)
 
     print("Training model...")
