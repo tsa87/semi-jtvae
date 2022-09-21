@@ -4,6 +4,7 @@ saved/
 *.csv
 *.xml
 *.npy
+*.pt
 .pickle
 
 data/

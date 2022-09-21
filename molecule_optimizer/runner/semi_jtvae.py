@@ -1,5 +1,6 @@
 import sys
 import math
+import pickle
 
 import numpy as np
 from rdkit import RDLogger, Chem
@@ -275,6 +276,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             save_iter (int): How often to save the iteration statistics.
 
         """
+        chem_prop = "LogP"
         if self.labelled_idxs is None:
             self.initalize_training(lr, anneal_rate, L_train, label_pct)
         
@@ -283,7 +285,8 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         
         if load_epoch > 0:
             self.vae.load_state_dict(
-                torch.load("saved" + "/model.graham_qed_50_1_iter_" + str(load_epoch))
+                torch.load("saved" + "/model."+ chem_prop +"_50_1_iter_" + str(load_epoch))
+            
             )
         
         
@@ -403,9 +406,9 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 if total_step % save_iter == 0:
                     torch.save(
                         self.vae.state_dict(),
-                        "saved" + "/model.graham_qed_50_1_iter_" + str(total_step),
+                        "saved" + "/model."+ chem_prop +"_50_1_iter_" + str(total_step),
                     )
-                    with open("saved" + "runner_20_qed_50_1_iter_.xml" + str(total_step), 'wb') as f:
+                    with open("saved" + "/runner_20_"+ chem_prop +"_50_1_iter_" + str(total_step) + ".xml" , 'wb') as f:
                         pickle.dump(self, f)
                 
                 if total_step % anneal_iter == 0:
@@ -452,13 +455,13 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             test_loader,
             alpha,
             beta
-        ) 
+        )
 
         torch.save(
             self.vae.state_dict(),
-            "saved" + "/model.graham_qed_50_1_iter_" + str(total_step),
+            "saved" + "/model."+ chem_prop +"_50_1_iter_" + str(total_step),
         )
-        with open("saved" + "runner_20_qed_50_1_iter_.xml" + str(total_step), 'wb') as f:
+        with open("saved" + "/runner_20_"+ chem_prop +"_50_1_iter_" + str(total_step) + ".xml" , 'wb') as f:
             pickle.dump(self, f)
 
 #     def train_gen_pred_supervised(
@@ -627,8 +630,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
 #                     total_step % kl_anneal_iter == 0
 #                     and total_step >= anneal_iter
 #                 ):
-#                     beta = min(max_beta, beta + step_beta)
-                    
+#                     beta = min(max_beta, beta + step_beta) 
 #                 if (
 #                     total_step % kl_anneal_iter == 0
 #                     and total_step >= anneal_iter
