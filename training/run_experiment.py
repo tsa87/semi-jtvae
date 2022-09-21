@@ -66,7 +66,7 @@ def main():
         with open('runner_20_logp_50_1.xml', 'wb') as f:
             pickle.dump(runner, f)
     
-    labels = torch.tensor(csv['LogP'][:60000]).float()
+    labels = torch.tensor(csv['MolWt'][:60000]).float()
     
     #labels = torch.tensor(csv['LogP']).float()
 
