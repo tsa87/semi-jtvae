@@ -61,12 +61,12 @@ def main():
     #with open('runner.xml', 'rb') as f: 
     #    runner = pickle.load(f)
     
-    if 'runner_20_qed_50_1.xml' not in os.listdir("."):
+    if 'runner_20_logp_50_1.xml' not in os.listdir("."):
         runner = SemiJTVAEGeneratorPredictor(smiles)
-        with open('runner_20_qed_50_1.xml', 'wb') as f:
+        with open('runner_20_logp_50_1.xml', 'wb') as f:
             pickle.dump(runner, f)
     
-    labels = torch.tensor(csv['QED'][:60000]).float()
+    labels = torch.tensor(csv['LogP'][:60000]).float()
     
     #labels = torch.tensor(csv['LogP']).float()
 
