@@ -1,5 +1,6 @@
 import sys
 import math
+import pickle
 
 import numpy as np
 from rdkit import RDLogger, Chem
@@ -453,7 +454,13 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         ) 
         
         with open('runner_20_logp_50_1_trained.xml', 'wb') as f:
-        pickle.dump(self, f)
+            pickle.dump(self, f)
+
+        torch.save(
+            self.vae.state_dict(),
+            "saved" + "/model.cedar_logp_50_1_iter_" + str(total_step),
+        )
+
 
     def train_gen_pred_supervised(
         self,
@@ -609,7 +616,6 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 if total_step % save_iter == 0:
                     torch.save(
                         self.vae.state_dict(),
-
                         "saved" + "/model.cedar_logp_50_1_iter_" + str(total_step),
                     )
 

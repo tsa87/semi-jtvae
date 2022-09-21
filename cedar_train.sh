@@ -2,7 +2,7 @@
 #SBATCH --time=2:59:00
 #SBATCH --gres=gpu:p100l:4
 #SBATCH --cpus-per-task=3
-#SBATCH --mem=55GB
+#SBATCH --mem=12GB
 #SBATCH --account=def-ester
 #SBATCH --output=cedar_logp_50_1_0.out
 echo “starting the job...”
