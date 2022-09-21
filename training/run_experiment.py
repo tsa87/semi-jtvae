@@ -38,6 +38,8 @@ def main():
     python training/run_experiment.py --config_path=configs/rand_gen_zinc250k_config_dict.json
     ```
     """
+    
+    cont = True
     parser = _setup_parser()
     args = parser.parse_args()
     print(args.config_path)
@@ -58,13 +60,17 @@ def main():
     #         pickle.dump(runner, f)
 
 
-    #with open('runner.xml', 'rb') as f: 
-    #    runner = pickle.load(f)
-    
-    if 'runner_20_logp_50_1.xml' not in os.listdir("."):
-        runner = SemiJTVAEGeneratorPredictor(smiles)
-        with open('runner_20_logp_50_1.xml', 'wb') as f:
-            pickle.dump(runner, f)
+
+    if cont == True:
+        with open('saved/runner_20_logp_50_1.xml', 'rb') as f: 
+            runner = pickle.load(f)
+            
+    else:
+        
+        if 'saved/ runner_20_logp_50_1.xml' not in os.listdir("."):
+            runner = SemiJTVAEGeneratorPredictor(smiles)
+            with open('runner_20_logp_50_1.xml', 'wb') as f:
+                pickle.dump(runner, f)
     
     labels = torch.tensor(csv['LogP'][:60000]).float()
     
@@ -83,31 +89,54 @@ def main():
     labels = runner.get_processed_labels(labels)
     preprocessed = runner.processed_smiles
     
-    perm_id=np.random.permutation(len(labels))
-    X_train = preprocessed[perm_id[N_TEST:]]
-    L_train = torch.tensor(labels.numpy()[perm_id[N_TEST:]])
+    if cont == True:
+        
+        L_train = torch.load("L_train.pt")
+        L_test = torch.load("L_test.pt")
+        L_Val = torch.load("L_Val.pt")
+        
+        with open('train.npy', 'rb') as f:
+            X_train = np.load(f, allow_pickle=True)
+
+        with open('test.npy', 'rb') as f:
+            X_test = np.load(f, allow_pickle=True)
+
+        with open('validation.npy', 'rb') as f:
+            X_Val = np.load(f, allow_pickle=True)
+            
+    else:
+        
+        perm_id=np.random.permutation(len(labels))
+        X_train = preprocessed[perm_id[N_TEST:]]
+        L_train = torch.tensor(labels.numpy()[perm_id[N_TEST:]])
 
 
-    X_test = preprocessed[perm_id[:N_TEST]]
-    L_test = torch.tensor(labels.numpy()[perm_id[:N_TEST]])
-   
-    val_cut = math.floor(len(X_train) * VAL_FRAC)
-    
-    X_Val = X_train[:val_cut]
-    L_Val = L_train[:val_cut]
+        X_test = preprocessed[perm_id[:N_TEST]]
+        L_test = torch.tensor(labels.numpy()[perm_id[:N_TEST]])
 
-    X_train = X_train[val_cut :]
-    L_train = L_train[val_cut :]
+        val_cut = math.floor(len(X_train) * VAL_FRAC)
 
-    with open('train_qed_50_1.npy', 'wb') as f:
-        np.save(f, X_train)
+        X_Val = X_train[:val_cut]
+        L_Val = L_train[:val_cut]
 
-    with open('test_qed_50_1.npy', 'wb') as f:
-        np.save(f, X_test)
+        X_train = X_train[val_cut :]
+        L_train = L_train[val_cut :]
 
-    with open('validation_qed_50_1.npy', 'wb') as f:
-        np.save(f, X_Val)
+        with open('train_qed_50_1.npy', 'wb') as f:
+            np.save(f, X_train)
 
+        with open('test_qed_50_1.npy', 'wb') as f:
+            np.save(f, X_test)
+
+        with open('validation_qed_50_1.npy', 'wb') as f:
+            np.save(f, X_Val)
+            
+        torch.save(L_train, "L_train.pt")
+
+        torch.save(L_test, "L_test.pt")
+
+        torch.save(L_Val, "L_Val.pt")
+        
     print("Training model...")
     runner.train_gen_pred(
     X_train,

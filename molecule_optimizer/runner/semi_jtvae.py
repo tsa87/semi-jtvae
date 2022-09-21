@@ -285,6 +285,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         if load_epoch > 0:
             self.vae.load_state_dict(
                 torch.load("saved" + "/model.cedar_logp_50_1_iter_" + str(load_epoch))
+            
             )
         
         
