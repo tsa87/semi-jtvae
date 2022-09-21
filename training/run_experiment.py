@@ -91,17 +91,17 @@ def main():
     
     if cont == True:
         
-        L_train = torch.load("L_train.pt")
-        L_test = torch.load("L_test.pt")
-        L_Val = torch.load("L_Val.pt")
+        L_train = torch.load("L_train_qed_50_1.pt")
+        L_test = torch.load("L_test_qed_50_1.pt")
+        L_Val = torch.load("L_Val_qed_50_1.pt")
         
-        with open('train.npy', 'rb') as f:
+        with open('train_qed_50_1.npy', 'rb') as f:
             X_train = np.load(f, allow_pickle=True)
 
-        with open('test.npy', 'rb') as f:
+        with open('test_qed_50_1.npy', 'rb') as f:
             X_test = np.load(f, allow_pickle=True)
 
-        with open('validation.npy', 'rb') as f:
+        with open('validation_qed_50_1.npy', 'rb') as f:
             X_Val = np.load(f, allow_pickle=True)
             
     else:
@@ -131,11 +131,11 @@ def main():
         with open('validation_qed_50_1.npy', 'wb') as f:
             np.save(f, X_Val)
             
-        torch.save(L_train, "L_train.pt")
+        torch.save(L_train, "L_train_qed_50_1.pt")
 
-        torch.save(L_test, "L_test.pt")
+        torch.save(L_test, "L_test_qed_50_1.pt")
 
-        torch.save(L_Val, "L_Val.pt")
+        torch.save(L_Val, "L_Val_qed_50_1.pt")
         
     print("Training model...")
     runner.train_gen_pred(
