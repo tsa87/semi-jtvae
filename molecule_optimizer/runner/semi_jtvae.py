@@ -405,6 +405,8 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                         self.vae.state_dict(),
                         "saved" + "/model.graham_qed_50_1_iter_" + str(total_step),
                     )
+                    with open("saved" + "runner_20_qed_50_1_iter_.xml" + str(total_step), 'wb') as f:
+                        pickle.dump(self, f)
                 
                 if total_step % anneal_iter == 0:
                     self.scheduler.step()
@@ -451,8 +453,12 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             alpha,
             beta
         ) 
-        
-        with open('runner_20_qed_50_1_trained.xml', 'wb') as f:
+
+        torch.save(
+            self.vae.state_dict(),
+            "saved" + "/model.graham_qed_50_1_iter_" + str(total_step),
+        )
+        with open("saved" + "runner_20_qed_50_1_iter_.xml" + str(total_step), 'wb') as f:
             pickle.dump(self, f)
 
 #     def train_gen_pred_supervised(
