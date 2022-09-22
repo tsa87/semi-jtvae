@@ -42,6 +42,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         self.processed_smiles, self.processed_idxs = self.preprocess(list_smiles)
         self.labelled_idxs = None
         
+        
     def get_model(self, task, config_dict):
         if task == "rand_gen":
             # hidden_size, latent_size, depthT, depthG
@@ -222,10 +223,6 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             else:
                 nn.init.xavier_normal_(param)
         
-        self.optimizer = optim.Adam(self.vae.parameters(), lr=lr)
-        self.scheduler = lr_scheduler.ExponentialLR(self.optimizer, anneal_rate)
-        self.scheduler.step()
-        
         self.labelled_idxs, self.unlabelled_idxs = self.compute_labelled_and_unlabelled_idxs(L_train, label_pct)
     
         
@@ -255,7 +252,8 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         save_iter,
         batch_size,
         num_workers,
-        label_pct
+        label_pct,
+        chem_prop
     ):
         """
         Train the Junction Tree Variational Autoencoder for the random generation task.
@@ -276,12 +274,17 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             save_iter (int): How often to save the iteration statistics.
 
         """
-        chem_prop = "LogP"
+        
         if self.labelled_idxs is None:
             self.initalize_training(lr, anneal_rate, L_train, label_pct)
         
         total_step = load_epoch
         meters = np.zeros(10)
+        
+        optimizer = optim.Adam(self.vae.parameters(), lr=lr)
+        scheduler = lr_scheduler.ExponentialLR(optimizer, anneal_rate)
+        scheduler.last_epoch = int(load_epoch / anneal_iter)
+        scheduler.step()
         
         if load_epoch > 0:
             self.vae.load_state_dict(
@@ -327,7 +330,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             for batch in loader:
                 total_step += 1
                 
-                self.optimizer.zero_grad()
+                optimizer.zero_grad()
                 
                 labelled_data = batch["labelled_data"]
                 unlabelled_data = batch["unlabelled_data"]
@@ -371,7 +374,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 
                 loss.backward()
                 nn.utils.clip_grad_norm_(self.vae.parameters(), clip_norm)
-                self.optimizer.step()
+                optimizer.step()
 
                 meters = meters + np.array(
                     [loss.detach().cpu(), kl_div, mae, word_loss.detach().cpu(), topo_loss.detach().cpu(), assm_loss.detach().cpu(), pred_loss.detach().cpu(), wacc*100, tacc*100, sacc*100]
@@ -412,8 +415,8 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                         pickle.dump(self, f)
                 
                 if total_step % anneal_iter == 0:
-                    self.scheduler.step()
-                    print("learning rate: %.6f" % self.scheduler.get_lr()[0])
+                    scheduler.step()
+                    print("learning rate: %.6f" % scheduler.get_lr()[0])
 
                 if (
                     total_step % kl_anneal_iter == 0
