@@ -165,7 +165,8 @@ def main():
     save_iter=conf["save_iter"],
     batch_size=conf["batch_size"],
     num_workers=conf["num_workers"],
-    label_pct=0.5
+    label_pct=0.5,
+    chem_prop = "LogP"
     )
 
 if __name__ == '__main__':
