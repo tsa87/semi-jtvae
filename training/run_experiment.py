@@ -39,7 +39,9 @@ def main():
     ```
     """
     
-    cont = True
+    cont = False
+    chem_prop = "LogP"
+
     parser = _setup_parser()
     args = parser.parse_args()
     print(args.config_path)
@@ -53,8 +55,6 @@ def main():
 
     smiles = csv['SMILES']
     smiles = smiles[:60000]
-
-    chem_prop = "LogP"
 
     # if 'runner.xml' not in os.listdir("."):
     #     runner = SemiJTVAEGeneratorPredictor(smiles)
@@ -161,12 +161,12 @@ def main():
     anneal_iter=conf["anneal_iter"],
     alpha_anneal_iter=conf["alpha_anneal_iter"],
     kl_anneal_iter=conf["kl_anneal_iter"],
-    print_iter=100,
+    print_iter=conf["print_iter"],
     save_iter=conf["save_iter"],
     batch_size=conf["batch_size"],
     num_workers=conf["num_workers"],
     label_pct=0.5,
-    chem_prop = "LogP"
+    chem_prop = chem_prop
     )
 
 if __name__ == '__main__':
