@@ -74,7 +74,7 @@ def main():
             with open("runner_20_" + chem_prop + "_50_1.xml", 'wb') as f:
                 pickle.dump(runner, f)
     
-    labels = torch.tensor(csv[chemprop][:60000]).float()
+    labels = torch.tensor(csv[chem_prop][:60000]).float()
     
     #labels = torch.tensor(csv[chemprop]).float()
 
