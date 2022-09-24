@@ -2,7 +2,7 @@
 #SBATCH --time=2:59:00
 #SBATCH --gres=gpu:a100:4
 #SBATCH --cpus-per-task=3
-#SBATCH --mem=12GB
+#SBATCH --mem=20GB
 #SBATCH --account=def-ester
 #SBATCH --output=narval_molwt_50_1.out
 echo “starting the job...”
