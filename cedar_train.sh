@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --time=2:59:00
-#SBATCH --gres=gpu:p100l:4
+#SBATCH --time=11:59:00
+#SBATCH --gres=gpu:v100l:4
 #SBATCH --cpus-per-task=3
 #SBATCH --mem=12GB
 #SBATCH --account=def-ester
