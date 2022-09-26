@@ -39,7 +39,9 @@ def main():
     ```
     """
     
-    cont = True
+    cont = False
+    chem_prop = "LogP"
+
     parser = _setup_parser()
     args = parser.parse_args()
     print(args.config_path)
@@ -53,8 +55,6 @@ def main():
 
     smiles = csv['SMILES']
     smiles = smiles[:60000]
-
-    chem_prop = "LogP"
 
     # if 'runner.xml' not in os.listdir("."):
     #     runner = SemiJTVAEGeneratorPredictor(smiles)
