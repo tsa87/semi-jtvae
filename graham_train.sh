@@ -2,7 +2,7 @@
 #SBATCH --time=11:59:00
 #SBATCH --gres=gpu:t4:4
 #SBATCH --cpus-per-task=3
-#SBATCH --mem=12GB
+#SBATCH --mem=70GB
 #SBATCH --account=def-ester
 #SBATCH --output=graham_qed_50_1.out
 echo “starting the job...”
