@@ -41,6 +41,7 @@ def main():
     
     cont = False
     chem_prop = "LogP"
+    load_epoch = 0
 
     parser = _setup_parser()
     args = parser.parse_args()
@@ -54,34 +55,26 @@ def main():
     csv = pd.read_csv("~/scratch/ZINC_310k.csv")
 
     smiles = csv['SMILES']
-    smiles = smiles[:60000]
-
-    # if 'runner.xml' not in os.listdir("."):
-    #     runner = SemiJTVAEGeneratorPredictor(smiles)
-    #     with open('runner.xml', 'wb') as f:
-    #         pickle.dump(runner, f)
-
-
+    #smiles = smiles[:60000]
 
     if cont == True:
-        with open("saved/runner_20_" + chem_prop + "_50_1.xml", 'rb') as f: 
+        with open("saved/runner_" + chem_prop + "_50_1_" + str(load_epoch) + ".xml", 'rb') as f: 
             runner = pickle.load(f)
             
     else:
         
-        if "runner_20_" + chem_prop + "_50_1.xml" not in os.listdir("."):
+        if "runner_" + chem_prop + "_50_1_"  + str(load_epoch) + ".xml" not in os.listdir("."):
             runner = SemiJTVAEGeneratorPredictor(smiles)
-            with open("runner_20_" + chem_prop + "_50_1.xml", 'wb') as f:
+            processed_smiles, processed_idxs = SemiJTVAEGeneratorPredictor.preprocess(smiles) 
+            with open("runner_" + chem_prop + "_50_1_"  + str(load_epoch) + ".xml", 'wb') as f:
                 pickle.dump(runner, f)
-        
-        else:
-            with open("runner_20_" + chem_prop + "_50_1.xml", 'rb') as f:
-                runner = pickle.load(f)
 
-    labels = torch.tensor(csv[chem_prop][:60000]).float()
+            labels = runner.get_processed_labels(labels, processed_idxs)
+            preprocessed = processed_smiles
+            
+            #labels = torch.tensor(csv[chem_prop][:60000]).float()
+            labels = torch.tensor(csv[chem_prop]).float()
     
-    #labels = torch.tensor(csv[chem_prop]).float()
-
     runner.get_model( "rand_gen",{
         "hidden_size": conf["model"]["hidden_size"],
         "latent_size": conf["model"]["latent_size"],
@@ -92,8 +85,6 @@ def main():
         "label_var": float(torch.var(labels)),
     },)
 
-    labels = runner.get_processed_labels(labels)
-    preprocessed = runner.processed_smiles
     
     if cont == True:
         
@@ -169,7 +160,7 @@ def main():
     L_test,
     X_Val,
     L_Val,
-    load_epoch = 0,
+    load_epoch = load_epoch,
     lr=conf["lr"],
     anneal_rate=conf["anneal_rate"],
     clip_norm=conf["clip_norm"],
