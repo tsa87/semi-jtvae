@@ -38,11 +38,10 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         super().__init__()
         if build_vocab:
             self.vocab = self.build_vocabulary(list_smiles)
-        self.model = None
-        self.processed_smiles, self.processed_idxs = self.preprocess(list_smiles)
+        self.vae = None
         self.labelled_idxs = None
-        
-        
+        self.unlabelled_idxs = None
+      
     def get_model(self, task, config_dict):
         if task == "rand_gen":
             # hidden_size, latent_size, depthT, depthG
@@ -83,8 +82,9 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         cset = set(vocabs)
     
         return list(cset)
-
-    def _tensorize(self, smiles, assm=True):
+    
+    @staticmethod
+    def _tensorize(smiles, assm=True):
         try:
             mol_tree = fast_jtnn.MolTree(smiles)
             mol_tree.recover()
@@ -100,8 +100,8 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         except:
             return None
         
-
-    def preprocess(self, list_smiles):
+    @staticmethod
+    def preprocess(list_smiles):
         """
         Preprocess the molecules.
 
@@ -117,15 +117,16 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         
         with Pool() as P:
             for chunk in tqdm(chunks):
-                preprocessed.extend(list(P.map(self._tensorize, chunk)))
+                preprocessed.extend(list(P.map(SemiJTVAEGeneratorPredictor._tensorize, chunk)))
         preprocessed = np.array(preprocessed)
         
         processed_idxs = (preprocessed != None).nonzero()[0]
         processed_smiles = preprocessed[processed_idxs]
         return processed_smiles, processed_idxs
     
-    def get_processed_labels(self, labels):
-        return labels[self.processed_idxs]
+    @staticmethod
+    def get_processed_labels(labels, processed_idxs):
+        return labels[processed_idxs]
     
     def test_loop(
         self,
@@ -460,222 +461,221 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
             beta
         )
 
-#     def train_gen_pred_supervised(
-#         self,
-#         loader,
-#         val_loader,
-#         test_loader,
-#         load_epoch,
-#         lr,
-#         anneal_rate,
-#         clip_norm,
-#         num_epochs,
-#         alpha,
-#         max_alpha,
-#         step_alpha,
-#         beta,
-#         max_beta,
-#         step_beta,
-#         anneal_iter,
-#         alpha_anneal_iter,
-#         kl_anneal_iter,
-#         print_iter,
-#         save_iter,
-#     ):
-#         """
-#         Train the Junction Tree Variational Autoencoder for the random generation task.
-
-#         Args:
-#             loader (MolTreeFolder): The MolTreeFolder loader.
-#             load_epoch (int): The epoch to load from state dictionary.
-#             lr (float): The learning rate for training.
-#             anneal_rate (float): The learning rate annealing.
-#             clip_norm (float): Clips gradient norm of an iterable of parameters.
-#             num_epochs (int): The number of training epochs.
-#             beta (float): The KL regularization weight.
-#             max_beta (float): The maximum KL regularization weight.
-#             step_beta (float): The KL regularization weight step size.
-#             anneal_iter (int): How often to step in annealing the learning rate.
-#             kl_anneal_iter (int): How often to step in annealing the KL regularization weight.
-#             print_iter (int): How often to print the iteration statistics.
-#             save_iter (int): How often to save the iteration statistics.
-
-#         """
-#         vocab = fast_jtnn.Vocab(self.vocab)
         
-#         for param in self.vae.parameters():
-#             if param.dim() == 1:
-#                 nn.init.constant_(param, 0)
-#             else:
-#                 nn.init.xavier_normal_(param)
+    def train_gen_pred_supervised(
+        self,
+        X_train,
+        L_train,
+        X_test,
+        L_test,
+        X_Val,
+        L_Val,
+        load_epoch,
+        lr,
+        anneal_rate,
+        clip_norm,
+        num_epochs,
+        alpha,
+        max_alpha,
+        step_alpha,
+        beta,
+        max_beta,
+        step_beta,
+        anneal_iter,
+        alpha_anneal_iter,
+        kl_anneal_iter,
+        print_iter,
+        save_iter,
+        batch_size,
+        num_workers,
+        label_pct,
+        chem_prop
+    ):
+        """
+        Train the Junction Tree Variational Autoencoder for the random generation task.
 
-#         if 0 > 0:
-#             self.vae.load_state_dict(
-#                 torch.load("checkpoints" + "/model.iter-0-" + str(load_epoch))
-#             )
+        Args:
+            loader (MolTreeFolder): The MolTreeFolder loader.
+            load_epoch (int): The epoch to load from state dictionary.
+            lr (float): The learning rate for training.
+            anneal_rate (float): The learning rate annealing.
+            clip_norm (float): Clips gradient norm of an iterable of parameters.
+            num_epochs (int): The number of training epochs.
+            beta (float): The KL regularization weight.
+            max_beta (float): The maximum KL regularization weight.
+            step_beta (float): The KL regularization weight step size.
+            anneal_iter (int): How often to step in annealing the learning rate.
+            kl_anneal_iter (int): How often to step in annealing the KL regularization weight.
+            print_iter (int): How often to print the iteration statistics.
+            save_iter (int): How often to save the iteration statistics.
 
-#         print(
-#             "Model #Params: %dK"
-#             % (sum([x.nelement() for x in self.vae.parameters()]) / 1000,)
-#         )
-
-#         optimizer = optim.Adam(self.vae.parameters(), lr=lr)
-#         scheduler = lr_scheduler.ExponentialLR(optimizer, anneal_rate)
-#         scheduler.step()
-
-#         def param_norm(m):
-#             return math.sqrt(
-#                 sum([p.norm().item() ** 2 for p in m.parameters()])
-#             )
-
-#         def grad_norm(m):
-#             return math.sqrt(
-#                 sum(
-#                     [
-#                         p.grad.norm().item() ** 2
-#                         for p in m.parameters()
-#                         if p.grad is not None
-#                     ]
-#                 )
-#             )
-
-#         total_step = load_epoch
-#         meters = np.zeros(10)
-             
-#         for epoch in range(num_epochs):
-#             self.vae.train()
+        """
+        
+        if self.labelled_idxs is None:
+            self.initalize_training(lr, anneal_rate, L_train, label_pct)
+        
+        total_step = load_epoch
+        meters = np.zeros(10)
+        
+        optimizer = optim.Adam(self.vae.parameters(), lr=lr)
+        scheduler = lr_scheduler.ExponentialLR(optimizer, anneal_rate)
+        scheduler.last_epoch = int(load_epoch / anneal_iter)
+        scheduler.step()
+        
+        if load_epoch > 0:
+            self.vae.load_state_dict(
+                torch.load("saved" + "/model."+ chem_prop +"_50_1_iter_" + str(load_epoch))
             
-#             for batch in loader:
-#                 total_step += 1
-                
-#                 self.vae.zero_grad()
-#                 labelled_data = batch["labelled_data"]
-#                 labels = batch["labels"]
+            )
 
-#                 (
-#                     labelled_loss,
-#                     labelled_kl_div,
-#                     labelled_mae,
-#                     labelled_word_loss,
-#                     labelled_topo_loss,
-#                     labelled_assm_loss,
-#                     labelled_pred_loss,
-#                     labelled_wacc,
-#                     labelled_tacc,
-#                     labelled_sacc,
-#                 ) = self.vae(labelled_data, labels, alpha, beta)
-                
-#                 loss = labelled_loss
-#                 kl_div = labelled_kl_div
-#                 mae = labelled_mae # Only labelled data have MAE
-#                 pred_loss = labelled_pred_loss # Only labelled data have pred loss
-#                 word_loss = labelled_word_loss
-#                 topo_loss = labelled_topo_loss
-#                 assm_loss = labelled_assm_loss
-#                 wacc = labelled_wacc
-#                 tacc = labelled_tacc
-#                 sacc = labelled_sacc
-                
-#                 optimizer.zero_grad()
-#                 loss.backward()
-#                 nn.utils.clip_grad_norm_(self.vae.parameters(), clip_norm)
-#                 optimizer.step()
+        print(
+            "Model #Params: %dK"
+            % (sum([x.nelement() for x in self.vae.parameters()]) / 1000,)
+        )
+        
+        def param_norm(m):
+            return math.sqrt(
+                sum([p.norm().item() ** 2 for p in m.parameters()])
+            )
 
-#                 meters = meters + np.array(
-#                     [loss.detach().cpu(), kl_div, mae, word_loss.detach().cpu(), topo_loss.detach().cpu(), assm_loss.detach().cpu(), pred_loss.detach().cpu(), wacc*100, tacc*100, sacc*100]
-#                 )
-
-#                 if total_step % print_iter == 0:
-#                     meters /= print_iter
-                    
-#                     print(
-#                         "[Train][%d] Alpha: %.3f, Beta: %.3f, Loss: %.2f, KL: %.2f, MAE: %.5f, Word Loss: %.2f, Topo Loss: %.2f, Assm Loss: %.2f, Pred Loss: %.2f, Word: %.2f, Topo: %.2f, Assm: %.2f, PNorm: %.2f, GNorm: %.2f"
-#                         % (
-#                             total_step,
-#                             alpha,
-#                             beta,
-#                             meters[0],
-#                             meters[1],
-#                             meters[2],
-#                             meters[3],
-#                             meters[4],
-#                             meters[5],
-#                             meters[6],
-#                             meters[7],
-#                             meters[8],
-#                             meters[9],
-#                             param_norm(self.vae),
-#                             grad_norm(self.vae),
-#                         )
-#                     )
-#                     sys.stdout.flush()
-#                     meters *= 0
-
-#                 if total_step % save_iter == 0:
-#                     torch.save(
-#                         self.vae.state_dict(),
-
-#                         "saved" + "/model.cedar_logp_50_1_iter_" + str(total_step),
-#                     )
-
-#                 if total_step % anneal_iter == 0:
-#                     scheduler.step()
-#                     print("learning rate: %.6f" % scheduler.get_lr()[0])
-
-#                 if (
-#                     total_step % kl_anneal_iter == 0
-#                     and total_step >= anneal_iter
-#                 ):
-#                     beta = min(max_beta, beta + step_beta) 
-#                 if (
-#                     total_step % kl_anneal_iter == 0
-#                     and total_step >= anneal_iter
-#                 ):
-#                     beta = min(max_beta, beta + step_beta)
-                    
-#                 if (
-#                     total_step % kl_anneal_iter == 0
-#                     and total_step >= alpha_anneal_iter
-#                 ):
-#                     alpha = min(max_alpha, alpha + step_alpha)
+        def grad_norm(m):
+            return math.sqrt(
+                sum(
+                    [
+                        p.grad.norm().item() ** 2
+                        for p in m.parameters()
+                        if p.grad is not None
+                    ]
+                )
+            )
+   
+        for epoch in range(num_epochs):
             
-#             val_type="Validation"
-#             mae = self.test_loop(
-#                 val_type,
-#                 val_loader,
-#                 load_epoch,
-#                 lr,
-#                 anneal_rate,
-#                 clip_norm,
-#                 num_epochs,
-#                 alpha,
-#                 beta,
-#                 max_beta,
-#                 step_beta,
-#                 anneal_iter,
-#                 kl_anneal_iter,
-#                 print_iter,
-#                 save_iter,
-#             )
+            self.vae.train()
+            
+            loader = SemiMolTreeFolderTest(
+                X_train, L_train,
+                self.vocab,
+                batch_size,
+                num_workers
+            )
+            
+            for batch in loader:
+                total_step += 1
                 
-#         val_type="Test"
-#         self.test_loop(
-#                 val_type,
-#                 test_loader,
-#                 load_epoch,
-#                 lr,
-#                 anneal_rate,
-#                 clip_norm,
-#                 num_epochs,
-#                 alpha,
-#                 beta,
-#                 max_beta,
-#                 step_beta,
-#                 anneal_iter,
-#                 kl_anneal_iter,
-#                 print_iter,
-#                 save_iter,
-#         )
+                optimizer.zero_grad()
+                
+                labelled_data = batch["labelled_data"]
+                labels = batch["labels"]
+
+                (
+                    labelled_loss,
+                    labelled_kl_div,
+                    labelled_mae,
+                    labelled_word_loss,
+                    labelled_topo_loss,
+                    labelled_assm_loss,
+                    labelled_pred_loss,
+                    labelled_wacc,
+                    labelled_tacc,
+                    labelled_sacc,
+                ) = self.vae(labelled_data, labels, alpha, beta)
+            
+                loss = labelled_loss
+                kl_div = labelled_kl_div
+                mae = labelled_mae # Only labelled data have MAE
+                pred_loss = labelled_pred_loss # Only labelled data have pred loss
+                word_loss = labelled_word_loss
+                topo_loss = labelled_topo_loss
+                assm_loss = labelled_assm_loss
+                wacc = labelled_wacc 
+                tacc = labelled_tacc
+                sacc = labelled_sacc
+                
+                loss.backward()
+                nn.utils.clip_grad_norm_(self.vae.parameters(), clip_norm)
+                optimizer.step()
+
+                meters = meters + np.array(
+                    [loss.detach().cpu(), kl_div, mae, word_loss.detach().cpu(), topo_loss.detach().cpu(), assm_loss.detach().cpu(), pred_loss.detach().cpu(), wacc*100, tacc*100, sacc*100]
+                )
+
+                if total_step % print_iter == 0:
+                    meters /= print_iter
+                    
+                    print(
+                        "[Train][%d] Alpha: %.3f, Beta: %.3f, Loss: %.2f, KL: %.2f, MAE: %.5f, Word Loss: %.2f, Topo Loss: %.2f, Assm Loss: %.2f, Pred Loss: %.2f, Word: %.2f, Topo: %.2f, Assm: %.2f, PNorm: %.2f, GNorm: %.2f"
+                        % (
+                            total_step,
+                            alpha,
+                            beta,
+                            meters[0],
+                            meters[1],
+                            meters[2],
+                            meters[3],
+                            meters[4],
+                            meters[5],
+                            meters[6],
+                            meters[7],
+                            meters[8],
+                            meters[9],
+                            param_norm(self.vae),
+                            grad_norm(self.vae),
+                        )
+                    )
+                    sys.stdout.flush()
+                    meters *= 0
+
+                if total_step % save_iter == 0:
+                    torch.save(
+                        self.vae.state_dict(),
+                        "saved" + "/model."+ chem_prop +"_50_1_iter_" + str(total_step),
+                    )
+                    with open("saved" + "/runner_20_"+ chem_prop +"_50_1_iter_" + str(total_step) + ".xml" , 'wb') as f:
+                        pickle.dump(self, f)
+                
+                if total_step % anneal_iter == 0:
+                    scheduler.step()
+                    print("learning rate: %.6f" % scheduler.get_lr()[0])
+
+                if (
+                    total_step % kl_anneal_iter == 0
+                    and total_step >= anneal_iter
+                ):
+                    beta = min(max_beta, beta + step_beta)
+                    
+            val_type="Validation"
+            val_loader = SemiMolTreeFolderTest(
+                X_Val,
+                L_Val,
+                self.vocab,
+                batch_size,
+                num_workers
+            )
+            self.test_loop(
+                val_type,
+                val_loader,
+                alpha,
+                beta
+            )  
+            
+        val_type="Test"
+        test_loader = SemiMolTreeFolderTest(
+            X_test,
+            L_test,
+            self.vocab,
+            batch_size,
+            num_workers
+        )
+        self.test_loop(
+            val_type,
+            test_loader,
+            alpha,
+            beta
+        )
+        
+        
+        
     def run_rand_gen(self, num_samples):
         """
         Sample new molecules from the trained model.
