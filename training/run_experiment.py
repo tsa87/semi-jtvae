@@ -39,7 +39,9 @@ def main():
     ```
     """
     
-    cont = True
+    cont = False
+    chem_prop = "LogP"
+
     parser = _setup_parser()
     args = parser.parse_args()
     print(args.config_path)
@@ -53,8 +55,6 @@ def main():
 
     smiles = csv['SMILES']
     smiles = smiles[:60000]
-
-    chem_prop = "LogP"
 
     # if 'runner.xml' not in os.listdir("."):
     #     runner = SemiJTVAEGeneratorPredictor(smiles)
@@ -73,10 +73,14 @@ def main():
             runner = SemiJTVAEGeneratorPredictor(smiles)
             with open("runner_20_" + chem_prop + "_50_1.xml", 'wb') as f:
                 pickle.dump(runner, f)
+        
+        else:
+            with open("saved/runner_20_" + chem_prop + "_50_1.xml", 'rb') as f:
+                runner = pickle.load(f)
+
+    labels = torch.tensor(csv[chem_prop][:60000]).float()
     
-    labels = torch.tensor(csv[chemprop][:60000]).float()
-    
-    #labels = torch.tensor(csv[chemprop]).float()
+    #labels = torch.tensor(csv[chem_prop]).float()
 
     runner.get_model( "rand_gen",{
         "hidden_size": conf["model"]["hidden_size"],
@@ -184,7 +188,7 @@ def main():
     batch_size=conf["batch_size"],
     num_workers=conf["num_workers"],
     label_pct=0.5,
-    chem_prop = "LogP"
+    chem_prop = chem_prop
     )
 
 if __name__ == '__main__':
