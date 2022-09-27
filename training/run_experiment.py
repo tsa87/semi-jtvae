@@ -66,7 +66,7 @@ def main():
         if "saved/runner_" + chem_prop + "_50_1_iter_"  + str(load_epoch) + ".xml" not in os.listdir("."):
             runner = SemiJTVAEGeneratorPredictor(smiles)
             processed_smiles, processed_idxs = SemiJTVAEGeneratorPredictor.preprocess(smiles) 
-            with open("runner_" + chem_prop + "_50_1_"  + str(load_epoch) + ".xml", 'wb') as f:
+            with open("saved/runner_" + chem_prop + "_50_1_"  + str(load_epoch) + ".xml", 'wb') as f:
                 pickle.dump(runner, f)
 
             labels = runner.get_processed_labels(labels, processed_idxs)
