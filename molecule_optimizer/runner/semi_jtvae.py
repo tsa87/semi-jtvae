@@ -412,7 +412,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                         self.vae.state_dict(),
                         "saved" + "/model."+ chem_prop +"_50_1_iter_" + str(total_step),
                     )
-                    with open("saved" + "/runner_20_"+ chem_prop +"_50_1_iter_" + str(total_step) + ".xml" , 'wb') as f:
+                    with open("saved" + "/runner_"+ chem_prop +"_50_1_iter_" + str(total_step) + ".xml" , 'wb') as f:
                         pickle.dump(self, f)
                 
                 if total_step % anneal_iter == 0:
@@ -631,7 +631,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                         self.vae.state_dict(),
                         "saved" + "/model."+ chem_prop +"_50_1_iter_" + str(total_step),
                     )
-                    with open("saved" + "/runner_20_"+ chem_prop +"_50_1_iter_" + str(total_step) + ".xml" , 'wb') as f:
+                    with open("saved" + "/runner_"+ chem_prop +"_50_1_iter_" + str(total_step) + ".xml" , 'wb') as f:
                         pickle.dump(self, f)
                 
                 if total_step % anneal_iter == 0:
