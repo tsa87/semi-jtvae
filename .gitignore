@@ -6,7 +6,7 @@ saved/
 *.npy
 *.pt
 .pickle
-
+*.sh
 data/
 
 # Data
