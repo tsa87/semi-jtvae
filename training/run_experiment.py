@@ -40,7 +40,7 @@ def main():
     """
     
     cont = False
-    chem_prop = "LogP"
+    chem_prop = "MolWt"
     load_epoch = 0
 
     parser = _setup_parser()
