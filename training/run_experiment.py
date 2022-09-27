@@ -69,13 +69,13 @@ def main():
             
     else:
         
-        if "saved/ runner_20_" + chem_prop + "_50_1.xml" not in os.listdir("."):
+        if "runner_20_" + chem_prop + "_50_1.xml" not in os.listdir("."):
             runner = SemiJTVAEGeneratorPredictor(smiles)
             with open("runner_20_" + chem_prop + "_50_1.xml", 'wb') as f:
                 pickle.dump(runner, f)
         
         else:
-            with open("saved/runner_20_" + chem_prop + "_50_1.xml", 'rb') as f:
+            with open("runner_20_" + chem_prop + "_50_1.xml", 'rb') as f:
                 runner = pickle.load(f)
 
     labels = torch.tensor(csv[chem_prop][:60000]).float()
