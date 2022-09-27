@@ -73,10 +73,14 @@ def main():
             runner = SemiJTVAEGeneratorPredictor(smiles)
             with open("runner_20_" + chem_prop + "_50_1.xml", 'wb') as f:
                 pickle.dump(runner, f)
-    
+        
+        else:
+            with open("saved/runner_20_" + chem_prop + "_50_1.xml", 'rb') as f:
+                runner = pickle.load(f)
+
     labels = torch.tensor(csv[chem_prop][:60000]).float()
     
-    #labels = torch.tensor(csv[chemprop]).float()
+    #labels = torch.tensor(csv[chem_prop]).float()
 
     runner.get_model( "rand_gen",{
         "hidden_size": conf["model"]["hidden_size"],
@@ -109,20 +113,36 @@ def main():
     else:
         
         perm_id=np.random.permutation(len(labels))
+        
         X_train = preprocessed[perm_id[N_TEST:]]
+        X_train_smiles = smiles[perm_id[N_TEST:]]
         L_train = torch.tensor(labels.numpy()[perm_id[N_TEST:]])
 
 
         X_test = preprocessed[perm_id[:N_TEST]]
+        X_test_smiles = smiles[perm_id[:N_TEST]]
         L_test = torch.tensor(labels.numpy()[perm_id[:N_TEST]])
 
         val_cut = math.floor(len(X_train) * VAL_FRAC)
 
         X_Val = X_train[:val_cut]
+        X_Val_smiles = X_train_smiles[:val_cut]
         L_Val = L_train[:val_cut]
 
         X_train = X_train[val_cut :]
+        X_train_smiles = X_train_smiles[val_cut :]
         L_train = L_train[val_cut :]
+        
+        with open("train_smiles_" + chem_prop + "_50_1.npy", 'wb') as f:
+            np.save(f, X_train_smiles)
+
+        with open("test_smiles_" + chem_prop + "_50_1.npy", 'wb') as f:
+            np.save(f, X_test_smiles)
+
+        with open("validation_smiles_" + chem_prop + "_50_1.npy", 'wb') as f:
+            np.save(f, X_Val_smiles)
+            
+        #save preproccessed
 
         with open("train_" + chem_prop + "_50_1.npy", 'wb') as f:
             np.save(f, X_train)
@@ -132,6 +152,8 @@ def main():
 
         with open("validation_" + chem_prop + "_50_1.npy", 'wb') as f:
             np.save(f, X_Val)
+            
+        #Save labels
             
         torch.save(L_train, "L_train_" + chem_prop + "_50_1.pt")
 
@@ -161,7 +183,7 @@ def main():
     anneal_iter=conf["anneal_iter"],
     alpha_anneal_iter=conf["alpha_anneal_iter"],
     kl_anneal_iter=conf["kl_anneal_iter"],
-    print_iter=conf["print_iter"],
+    print_iter=100,
     save_iter=conf["save_iter"],
     batch_size=conf["batch_size"],
     num_workers=conf["num_workers"],
