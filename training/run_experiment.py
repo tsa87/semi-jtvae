@@ -40,7 +40,7 @@ def main():
     """
     
     cont = False
-    chem_prop = "QED"
+    chem_prop = "MolWt"
     load_epoch = 0
 
     parser = _setup_parser()
@@ -61,9 +61,8 @@ def main():
         with open("saved/runner_" + chem_prop + "_50_1_iter_" + str(load_epoch) + ".xml", 'rb') as f: 
             runner = pickle.load(f)
             
-    else:
-        
-        if "saved/runner_" + chem_prop + "_50_1_iter_"  + str(load_epoch) + ".xml" not in os.listdir("."):
+    else: 
+        if "runner_" + chem_prop + "_50_1_iter_"  + str(load_epoch) + ".xml" not in os.listdir("./saved/"):
             runner = SemiJTVAEGeneratorPredictor(smiles)
             processed_smiles, processed_idxs = SemiJTVAEGeneratorPredictor.preprocess(smiles) 
             with open("saved/runner_" + chem_prop + "_50_1_iter_"  + str(load_epoch) + ".xml", 'wb') as f:
@@ -76,8 +75,13 @@ def main():
             preprocessed = processed_smiles
             
         else:
+            print("load")
             with open("saved/runner_" + chem_prop + "_50_1_iter_" + str(load_epoch) + ".xml", 'rb') as f:
                 runner = pickle.load(f)
+            print("process")
+
+            processed_smiles, processed_idxs = SemiJTVAEGeneratorPredictor.preprocess(smiles) 
+            print("done")
 
             #labels = torch.tensor(csv[chem_prop][:60000]).float()
             labels = torch.tensor(csv[chem_prop]).float()
