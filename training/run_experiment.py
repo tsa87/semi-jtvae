@@ -18,8 +18,8 @@ warnings.filterwarnings("ignore")
 np.random.seed(1)
 torch.manual_seed(1)
 
-#N_TEST = 10000
-N_TEST = 200
+N_TEST = 10000
+#N_TEST = 200
 VAL_FRAC = 0.05
 
 
@@ -38,10 +38,10 @@ def main():
     python training/run_experiment.py --config_path=configs/rand_gen_zinc250k_config_dict.json
     ```
     """
-    
-    cont = False
-    chem_prop = "MolWt"
-    load_epoch = 0
+
+    cont = True
+    chem_prop = "LogP"
+    load_epoch = 60000
 
     parser = _setup_parser()
     args = parser.parse_args()
@@ -56,39 +56,46 @@ def main():
 
     smiles = csv['SMILES']
     #smiles = smiles[:60000]
-
+    
+    #labels = torch.tensor(csv[chem_prop][:60000]).float()
+    labels = torch.tensor(csv[chem_prop]).float()
+    
     if cont == True:
         with open("saved/runner_" + chem_prop + "_50_1_iter_" + str(load_epoch) + ".xml", 'rb') as f: 
             runner = pickle.load(f)
-            
-    else: 
-        if "runner_" + chem_prop + "_50_1_iter_"  + str(load_epoch) + ".xml" not in os.listdir("./saved/"):
+
+    else:
+        
+        if 'runner.xml' not in os.listdir("."):    
             runner = SemiJTVAEGeneratorPredictor(smiles)
             processed_smiles, processed_idxs = SemiJTVAEGeneratorPredictor.preprocess(smiles) 
-            with open("saved/runner_" + chem_prop + "_50_1_iter_"  + str(load_epoch) + ".xml", 'wb') as f:
-                pickle.dump(runner, f)
-
-            #labels = torch.tensor(csv[chem_prop][:60000]).float()
-            labels = torch.tensor(csv[chem_prop]).float()
-
-            labels = runner.get_processed_labels(labels, processed_idxs)
-            preprocessed = processed_smiles
             
+            with open('processed_smiles.xml', 'wb') as f:
+                pickle.dump(processed_smiles, f)
+
+            with open('processed_idxs.xml', 'wb') as f:
+                pickle.dump(processed_idxs, f)
+
+            with open('runner.xml', 'wb') as f:
+                pickle.dump(runner, f)
+ 
         else:
-            print("load")
-            with open("saved/runner_" + chem_prop + "_50_1_iter_" + str(load_epoch) + ".xml", 'rb') as f:
+            with open('runner.xml', 'rb') as f:
                 runner = pickle.load(f)
             print("process")
 
             processed_smiles, processed_idxs = SemiJTVAEGeneratorPredictor.preprocess(smiles) 
             print("done")
 
-            #labels = torch.tensor(csv[chem_prop][:60000]).float()
-            labels = torch.tensor(csv[chem_prop]).float()
-
-            labels = runner.get_processed_labels(labels, processed_idxs)
-            preprocessed = processed_smiles
-
+            with open('processed_smiles.xml', 'rb') as f:
+                processed_smiles = pickle.load(f)
+        
+            with open('processed_idxs.xml', 'rb') as f:
+                processed_idxs = pickle.load(f)
+            
+        labels = runner.get_processed_labels(labels, processed_idxs)
+        preprocessed = processed_smiles
+    
     runner.get_model( "rand_gen",{
         "hidden_size": conf["model"]["hidden_size"],
         "latent_size": conf["model"]["latent_size"],
