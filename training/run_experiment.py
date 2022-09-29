@@ -39,9 +39,11 @@ def main():
     ```
     """
 
-    cont = True
+    cont = False
+    shuffle = False
     chem_prop = "LogP"
-    load_epoch = 60000
+    load_epoch = 0
+    label_pct = 0.2
 
     parser = _setup_parser()
     args = parser.parse_args()
@@ -61,7 +63,7 @@ def main():
     labels = torch.tensor(csv[chem_prop]).float()
     
     if cont == True:
-        with open("saved/runner_" + chem_prop + "_50_1_iter_" + str(load_epoch) + ".xml", 'rb') as f: 
+        with open("saved/runner_" + chem_prop + "_20_1_iter_" + str(load_epoch) + ".xml", 'rb') as f: 
             runner = pickle.load(f)
 
     else:
@@ -82,19 +84,6 @@ def main():
         else:
             with open('runner.xml', 'rb') as f:
                 runner = pickle.load(f)
-            print("process")
-
-            processed_smiles, processed_idxs = SemiJTVAEGeneratorPredictor.preprocess(smiles) 
-            print("done")
-
-            with open('processed_smiles.xml', 'rb') as f:
-                processed_smiles = pickle.load(f)
-        
-            with open('processed_idxs.xml', 'rb') as f:
-                processed_idxs = pickle.load(f)
-            
-        labels = runner.get_processed_labels(labels, processed_idxs)
-        preprocessed = processed_smiles
     
     runner.get_model( "rand_gen",{
         "hidden_size": conf["model"]["hidden_size"],
@@ -107,22 +96,31 @@ def main():
     },)
 
     
-    if cont == True:
+    if shuffle == False:
         
-        L_train = torch.load("L_train_" + chem_prop + "_50_1.pt")
-        L_test = torch.load("L_test_" + chem_prop + "_50_1.pt")
-        L_Val = torch.load("L_Val_" + chem_prop + "_50_1.pt")
+        L_train = torch.load("L_train_" + chem_prop + "_1.pt")
+        L_test = torch.load("L_test_" + chem_prop + "_1.pt")
+        L_Val = torch.load("L_Val_" + chem_prop + "_1.pt")
         
-        with open("train_" + chem_prop + "_50_1.npy", 'rb') as f:
+        with open("train_" + chem_prop + "_1.npy", 'rb') as f:
             X_train = np.load(f, allow_pickle=True)
 
-        with open("test_" + chem_prop + "_50_1.npy", 'rb') as f:
+        with open("test_" + chem_prop + "_1.npy", 'rb') as f:
             X_test = np.load(f, allow_pickle=True)
 
-        with open("validation_" + chem_prop + "_50_1.npy", 'rb') as f:
+        with open("validation_" + chem_prop + "_1.npy", 'rb') as f:
             X_Val = np.load(f, allow_pickle=True)
             
     else:
+
+        with open('processed_smiles.xml', 'rb') as f:
+                processed_smiles = pickle.load(f)
+
+        with open('processed_idxs.xml', 'rb') as f:
+            processed_idxs = pickle.load(f)
+
+        labels = runner.get_processed_labels(labels, processed_idxs)
+        preprocessed = processed_smiles
         
         perm_id=np.random.permutation(len(labels))
         
@@ -145,33 +143,33 @@ def main():
         X_train_smiles = X_train_smiles[val_cut :]
         L_train = L_train[val_cut :]
         
-        with open("train_smiles_" + chem_prop + "_50_1.npy", 'wb') as f:
+        with open("train_smiles_" + chem_prop + "_1.npy", 'wb') as f:
             np.save(f, X_train_smiles)
 
-        with open("test_smiles_" + chem_prop + "_50_1.npy", 'wb') as f:
+        with open("test_smiles_" + chem_prop + "_1.npy", 'wb') as f:
             np.save(f, X_test_smiles)
 
-        with open("validation_smiles_" + chem_prop + "_50_1.npy", 'wb') as f:
+        with open("validation_smiles_" + chem_prop + "_1.npy", 'wb') as f:
             np.save(f, X_Val_smiles)
             
         #save preproccessed
 
-        with open("train_" + chem_prop + "_50_1.npy", 'wb') as f:
+        with open("train_" + chem_prop + "_1.npy", 'wb') as f:
             np.save(f, X_train)
 
-        with open("test_" + chem_prop + "_50_1.npy", 'wb') as f:
+        with open("test_" + chem_prop + "_1.npy", 'wb') as f:
             np.save(f, X_test)
 
-        with open("validation_" + chem_prop + "_50_1.npy", 'wb') as f:
+        with open("validation_" + chem_prop + "_1.npy", 'wb') as f:
             np.save(f, X_Val)
             
         #Save labels
             
-        torch.save(L_train, "L_train_" + chem_prop + "_50_1.pt")
+        torch.save(L_train, "L_train_" + chem_prop + "_1.pt")
 
-        torch.save(L_test, "L_test_" + chem_prop + "_50_1.pt")
+        torch.save(L_test, "L_test_" + chem_prop + "_1.pt")
 
-        torch.save(L_Val, "L_Val_" + chem_prop + "_50_1.pt")
+        torch.save(L_Val, "L_Val_" + chem_prop + "_1.pt")
         
     print("Training model...")
     runner.train_gen_pred(
@@ -199,7 +197,7 @@ def main():
     save_iter=conf["save_iter"],
     batch_size=conf["batch_size"],
     num_workers=conf["num_workers"],
-    label_pct=0.5,
+    label_pct= label_pct,
     chem_prop = chem_prop
     )
 
