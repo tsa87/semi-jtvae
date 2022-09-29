@@ -644,6 +644,12 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 ):
                     beta = min(max_beta, beta + step_beta)
                     
+                if (
+                    total_step % kl_anneal_iter == 0
+                    and total_step >= alpha_anneal_iter
+                ):
+                    alpha = min(max_alpha, alpha + step_alpha)
+                    
             val_type="Validation"
             val_loader = SemiMolTreeFolderTest(
                 X_Val,

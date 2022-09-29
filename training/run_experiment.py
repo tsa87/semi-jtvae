@@ -38,7 +38,7 @@ def main():
     python training/run_experiment.py --config_path=configs/rand_gen_zinc250k_config_dict.json
     ```
     """
-    
+
     cont = True
     chem_prop = "LogP"
     load_epoch = 60000
@@ -82,6 +82,10 @@ def main():
         else:
             with open('runner.xml', 'rb') as f:
                 runner = pickle.load(f)
+            print("process")
+
+            processed_smiles, processed_idxs = SemiJTVAEGeneratorPredictor.preprocess(smiles) 
+            print("done")
 
             with open('processed_smiles.xml', 'rb') as f:
                 processed_smiles = pickle.load(f)
