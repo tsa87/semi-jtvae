@@ -61,28 +61,33 @@ def main():
         with open("saved/runner_" + chem_prop + "_50_1_iter_" + str(load_epoch) + ".xml", 'rb') as f: 
             runner = pickle.load(f)
             
-    else:
-        
-        if "saved/runner_" + chem_prop + "_50_1_iter_"  + str(load_epoch) + ".xml" not in os.listdir("."):
+    else: 
+        if "runner_" + chem_prop + "_50_1_iter_"  + str(load_epoch) + ".xml" not in os.listdir("./saved/"):
             runner = SemiJTVAEGeneratorPredictor(smiles)
             processed_smiles, processed_idxs = SemiJTVAEGeneratorPredictor.preprocess(smiles) 
-            with open("saved/runner_" + chem_prop + "_50_1_"  + str(load_epoch) + ".xml", 'wb') as f:
+            with open("saved/runner_" + chem_prop + "_50_1_iter_"  + str(load_epoch) + ".xml", 'wb') as f:
                 pickle.dump(runner, f)
+
+            #labels = torch.tensor(csv[chem_prop][:60000]).float()
+            labels = torch.tensor(csv[chem_prop]).float()
 
             labels = runner.get_processed_labels(labels, processed_idxs)
             preprocessed = processed_smiles
             
-            #labels = torch.tensor(csv[chem_prop][:60000]).float()
-            labels = torch.tensor(csv[chem_prop]).float()
         else:
+            print("load")
             with open("saved/runner_" + chem_prop + "_50_1_iter_" + str(load_epoch) + ".xml", 'rb') as f:
                 runner = pickle.load(f)
+            print("process")
+
+            processed_smiles, processed_idxs = SemiJTVAEGeneratorPredictor.preprocess(smiles) 
+            print("done")
+
+            #labels = torch.tensor(csv[chem_prop][:60000]).float()
+            labels = torch.tensor(csv[chem_prop]).float()
 
             labels = runner.get_processed_labels(labels, processed_idxs)
             preprocessed = processed_smiles
-
-            #labels = torch.tensor(csv[chem_prop][:60000]).float()
-            labels = torch.tensor(csv[chem_prop]).float()
 
     runner.get_model( "rand_gen",{
         "hidden_size": conf["model"]["hidden_size"],
