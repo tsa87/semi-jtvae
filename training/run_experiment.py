@@ -43,7 +43,7 @@ def main():
     shuffle = False
     chem_prop = "LogP"
     load_epoch = 0
-    label_pct = 0.2
+    label_pct = 0.05
 
     parser = _setup_parser()
     args = parser.parse_args()
@@ -63,7 +63,7 @@ def main():
     labels = torch.tensor(csv[chem_prop]).float()
     
     if cont == True:
-        with open("saved/runner_" + chem_prop + "_20_1_iter_" + str(load_epoch) + ".xml", 'rb') as f: 
+        with open("saved/runner_" + chem_prop + "_10_1_iter_" + str(load_epoch) + ".xml", 'rb') as f: 
             runner = pickle.load(f)
 
     else:
