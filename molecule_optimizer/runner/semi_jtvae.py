@@ -289,7 +289,7 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
         
         if load_epoch > 0:
             self.vae.load_state_dict(
-                torch.load("saved" + "/model."+ chem_prop +"_50_1_iter_" + str(load_epoch))
+                torch.load("saved" + "/model."+ chem_prop +"_5_1_iter_" + str(load_epoch))
             
             )
         
@@ -410,9 +410,9 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 if total_step % save_iter == 0:
                     torch.save(
                         self.vae.state_dict(),
-                        "saved" + "/model."+ chem_prop +"_50_1_iter_" + str(total_step),
+                        "saved" + "/model."+ chem_prop +"_5_1_iter_" + str(total_step),
                     )
-                    with open("saved" + "/runner_"+ chem_prop +"_50_1_iter_" + str(total_step) + ".xml" , 'wb') as f:
+                    with open("saved" + "/runner_"+ chem_prop +"_5_1_iter_" + str(total_step) + ".xml" , 'wb') as f:
                         pickle.dump(self, f)
                 
                 if total_step % anneal_iter == 0:
@@ -446,20 +446,20 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 beta
             )  
             
-        val_type="Test"
-        test_loader = SemiMolTreeFolderTest(
-            X_test,
-            L_test,
-            self.vocab,
-            batch_size,
-            num_workers
-        )
-        self.test_loop(
-            val_type,
-            test_loader,
-            alpha,
-            beta
-        )
+            val_type="Test"
+            test_loader = SemiMolTreeFolderTest(
+                X_test,
+                L_test,
+                self.vocab,
+                batch_size,
+                num_workers
+            )
+            self.test_loop(
+                val_type,
+                test_loader,
+                alpha,
+                beta
+            )
 
         
     def train_gen_pred_supervised(
@@ -665,20 +665,20 @@ class SemiJTVAEGeneratorPredictor(GeneratorPredictor):
                 beta
             )  
             
-        val_type="Test"
-        test_loader = SemiMolTreeFolderTest(
-            X_test,
-            L_test,
-            self.vocab,
-            batch_size,
-            num_workers
-        )
-        self.test_loop(
-            val_type,
-            test_loader,
-            alpha,
-            beta
-        )
+            val_type="Test"
+            test_loader = SemiMolTreeFolderTest(
+                X_test,
+                L_test,
+                self.vocab,
+                batch_size,
+                num_workers
+            )
+            self.test_loop(
+                val_type,
+                test_loader,
+                alpha,
+                beta
+            )
         
         
         
