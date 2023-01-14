@@ -3,6 +3,8 @@
 **Nov 2022**: Our paper is accepted to [AAAI 23' Deep Learning on Graphs workshop](https://deep-learning-graphs.bitbucket.io/dlg-aaai23/index.html)!
 
 ## Usage
+### Quickstart
+Run `semi_jtvae_train.ipynb` for training a model and run `semi_jtvae_gen.ipynb` for (conditionally) generating molecules using the trained model.
 
 ## Citations
 If you find the models useful in your research, we ask that you cite our paper:
