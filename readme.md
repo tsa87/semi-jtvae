@@ -1,4 +1,4 @@
-# Semi-Supervised Junction Tree Variational Autoencoder for Molecular Graphs
+# Semi-Supervised JT-VAE for Molecular Graphs
 
 **Nov 2022**: Our paper is accepted to [AAAI 23' Deep Learning on Graphs workshop](https://deep-learning-graphs.bitbucket.io/dlg-aaai23/index.html)!
 
